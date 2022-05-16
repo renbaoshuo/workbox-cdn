@@ -1247,4 +1247,4 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
   return exports;
 
 }({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private));
-//# sourceMappingURL=workbox-background-sync.dev.js.map
+

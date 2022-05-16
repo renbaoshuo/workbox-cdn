@@ -232,4 +232,4 @@ this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cach
     return exports;
 
 }({}, workbox.backgroundSync, workbox.core._private, workbox.core._private, workbox.core._private, workbox.routing, workbox.routing, workbox.strategies, workbox.strategies));
-//# sourceMappingURL=workbox-offline-ga.dev.js.map
+
