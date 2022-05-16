@@ -1,0 +1,36 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 3 * * *'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - run: yarn install
+      - run: yarn run build
+      - name: Publish
+        run: |
+          git config --global user.name BaoshuoBot
+          git config --global user.email "79077260+BaoshuoBot@users.noreply.github.com"
+
+          tag=$(jq .version package.json -r)
+          echo $tag
+
+          [[ "$tag" == "$(git describe --tags --abbrev=0)" ]] && exit 0
+
+          git add package.json dist
+
+          git commit -m "chore: publish $tag"
+          git tag -a $tag -m "release: $tag"
+
+          git push
+          git push --tags

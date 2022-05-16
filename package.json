@@ -1,0 +1,26 @@
+{
+    "name": "workbox-cdn",
+    "version": "6.5.3",
+    "description": "Workbox Unofficial CDN",
+    "repository": "renbaoshuo/workbox-cdn",
+    "license": "MIT",
+    "author": "Google's Web DevRel Team",
+    "main": "workbox/workbox-sw.js",
+    "files": [
+      "workbox"
+    ],
+    "scripts": {
+      "build": "./scripts/build"
+    },
+    "devDependencies": {
+      "workbox-cli": "latest"
+    },
+    "keywords": [
+      "workbox",
+      "workboxjs",
+      "sw",
+      "service-worker",
+      "pwa",
+      "cdn"
+    ]
+  }
