@@ -22,9 +22,9 @@ rm dist/*.map
 perl -pi -e "s|\"version\": .+|\"version\": \"$version\",|" "package.json"
 
 # Better CDN
-find workbox -type f | xargs perl -pi -e "s|https://storage.googleapis.com/workbox-cdn/releases/[^\"]+|https://cdnjs.baoshuo.ren/baoshuo/workbox-cdn\@$version/dist|g"
+find dist -type f | xargs perl -pi -e "s|https://storage.googleapis.com/workbox-cdn/releases/[^\"]+|https://cdn.jsdelivr.net/gh/renbaoshuo/workbox-cdn\@$version/dist|g"
 
 # Remove sourcemap references
-find workbox -type f | xargs perl -pi -e "s|^//# .+||g"
+find dist -type f | xargs perl -pi -e "s|^//# .+||g"
 
 echo "workbox-cdn@$version"
