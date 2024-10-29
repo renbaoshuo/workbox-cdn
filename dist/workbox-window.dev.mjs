@@ -1,5 +1,6 @@
+// @ts-ignore
 try {
-  self['workbox:window:7.0.0'] && _();
+  self['workbox:window:7.2.0'] && _();
 } catch (e) {}
 
 /*
@@ -25,21 +26,19 @@ try {
  */
 // Better not change type of data.
 // eslint-disable-next-line @typescript-eslint/ban-types
-
 function messageSW(sw, data) {
   return new Promise(resolve => {
     const messageChannel = new MessageChannel();
-
     messageChannel.port1.onmessage = event => {
       resolve(event.data);
     };
-
     sw.postMessage(data, [messageChannel.port2]);
   });
 }
 
+// @ts-ignore
 try {
-  self['workbox:core:7.0.0'] && _();
+  self['workbox:core:7.2.0'] && _();
 } catch (e) {}
 
 /*
@@ -57,7 +56,6 @@ try {
  *
  * @private
  */
-
 class Deferred {
   /**
    * Creates a promise and exposes its resolve and reject functions as methods.
@@ -68,7 +66,6 @@ class Deferred {
       this.reject = reject;
     });
   }
-
 }
 
 /*
@@ -82,7 +79,6 @@ class Deferred {
  *
  * @private
  **/
-
 function dontWaitFor(promise) {
   // Effective no-op.
   void promise.then(() => {});
@@ -100,7 +96,6 @@ const logger = (() => {
   if (!('__WB_DISABLE_DEV_LOGS' in globalThis)) {
     self.__WB_DISABLE_DEV_LOGS = false;
   }
-
   let inGroup = false;
   const methodToColorMap = {
     debug: `#7f8c8d`,
@@ -109,14 +104,11 @@ const logger = (() => {
     error: `#c0392b`,
     groupCollapsed: `#3498db`,
     groupEnd: null // No colored prefix on groupEnd
-
   };
-
   const print = function (method, args) {
     if (self.__WB_DISABLE_DEV_LOGS) {
       return;
     }
-
     if (method === 'groupCollapsed') {
       // Safari doesn't print all console.groupCollapsed() arguments:
       // https://bugs.webkit.org/show_bug.cgi?id=182754
@@ -125,33 +117,26 @@ const logger = (() => {
         return;
       }
     }
-
-    const styles = [`background: ${methodToColorMap[method]}`, `border-radius: 0.5em`, `color: white`, `font-weight: bold`, `padding: 2px 0.5em`]; // When in a group, the workbox prefix is not displayed.
-
+    const styles = [`background: ${methodToColorMap[method]}`, `border-radius: 0.5em`, `color: white`, `font-weight: bold`, `padding: 2px 0.5em`];
+    // When in a group, the workbox prefix is not displayed.
     const logPrefix = inGroup ? [] : ['%cworkbox', styles.join(';')];
     console[method](...logPrefix, ...args);
-
     if (method === 'groupCollapsed') {
       inGroup = true;
     }
-
     if (method === 'groupEnd') {
       inGroup = false;
     }
-  }; // eslint-disable-next-line @typescript-eslint/ban-types
-
-
+  };
+  // eslint-disable-next-line @typescript-eslint/ban-types
   const api = {};
   const loggerMethods = Object.keys(methodToColorMap);
-
   for (const key of loggerMethods) {
     const method = key;
-
     api[method] = (...args) => {
       print(method, args);
     };
   }
-
   return api;
 })();
 
@@ -162,7 +147,6 @@ const logger = (() => {
   license that can be found in the LICENSE file or at
   https://opensource.org/licenses/MIT.
 */
-
 /**
  * A minimal `EventTarget` shim.
  * This is necessary because not all browsers support constructable
@@ -178,11 +162,8 @@ class WorkboxEventTarget {
    * @param {Function} listener
    * @private
    */
-
-
   addEventListener(type, listener) {
     const foo = this._getEventListenersByType(type);
-
     foo.add(listener);
   }
   /**
@@ -190,8 +171,6 @@ class WorkboxEventTarget {
    * @param {Function} listener
    * @private
    */
-
-
   removeEventListener(type, listener) {
     this._getEventListenersByType(type).delete(listener);
   }
@@ -199,13 +178,9 @@ class WorkboxEventTarget {
    * @param {Object} event
    * @private
    */
-
-
   dispatchEvent(event) {
     event.target = this;
-
     const listeners = this._getEventListenersByType(event.type);
-
     for (const listener of listeners) {
       listener(event);
     }
@@ -218,16 +193,12 @@ class WorkboxEventTarget {
    * @return {Set<ListenerCallback>} An array of handler functions.
    * @private
    */
-
-
   _getEventListenersByType(type) {
     if (!this._eventListenerRegistry.has(type)) {
       this._eventListenerRegistry.set(type, new Set());
     }
-
     return this._eventListenerRegistry.get(type);
   }
-
 }
 
 /*
@@ -246,7 +217,6 @@ class WorkboxEventTarget {
  * @param {string} url2
  * @return {boolean}
  */
-
 function urlsMatch(url1, url2) {
   const {
     href
@@ -267,13 +237,11 @@ function urlsMatch(url1, url2) {
  * constructable `EventTarget`, and using a real `Event` will error.
  * @private
  */
-
 class WorkboxEvent {
   constructor(type, props) {
     this.type = type;
     Object.assign(this, props);
   }
-
 }
 
 /*
@@ -283,15 +251,15 @@ class WorkboxEvent {
   license that can be found in the LICENSE file or at
   https://opensource.org/licenses/MIT.
 */
+// The time a SW must be in the waiting phase before we can conclude
 // `skipWaiting()` wasn't called. This 200 amount wasn't scientifically
 // chosen, but it seems to avoid false positives in my testing.
-
-const WAITING_TIMEOUT_DURATION = 200; // The amount of time after a registration that we can reasonably conclude
+const WAITING_TIMEOUT_DURATION = 200;
+// The amount of time after a registration that we can reasonably conclude
 // that the registration didn't trigger an update.
-
-const REGISTRATION_TIMEOUT_DURATION = 60000; // The de facto standard message that a service worker should be listening for
+const REGISTRATION_TIMEOUT_DURATION = 60000;
+// The de facto standard message that a service worker should be listening for
 // to trigger a call to skipWaiting().
-
 const SKIP_WAITING_MESSAGE = {
   type: 'SKIP_WAITING'
 };
@@ -307,7 +275,6 @@ const SKIP_WAITING_MESSAGE = {
  * @fires {@link workbox-window.Workbox#redundant}
  * @memberof workbox-window
  */
-
 class Workbox extends WorkboxEventTarget {
   /**
    * Creates a new Workbox instance with a script URL and service worker
@@ -324,8 +291,8 @@ class Workbox extends WorkboxEventTarget {
   constructor(scriptURL, registerOptions = {}) {
     super();
     this._registerOptions = {};
-    this._updateFoundCount = 0; // Deferreds we can resolve later.
-
+    this._updateFoundCount = 0;
+    // Deferreds we can resolve later.
     this._swDeferred = new Deferred();
     this._activeDeferred = new Deferred();
     this._controllingDeferred = new Deferred();
@@ -334,11 +301,11 @@ class Workbox extends WorkboxEventTarget {
     /**
      * @private
      */
-
     this._onUpdateFound = () => {
       // `this._registration` will never be `undefined` after an update is found.
       const registration = this._registration;
-      const installingSW = registration.installing; // If the script URL passed to `navigator.serviceWorker.register()` is
+      const installingSW = registration.installing;
+      // If the script URL passed to `navigator.serviceWorker.register()` is
       // different from the current controlling SW's script URL, we know any
       // successful registration calls will trigger an `updatefound` event.
       // But if the registered script URL is the same as the current controlling
@@ -350,21 +317,23 @@ class Workbox extends WorkboxEventTarget {
       // script it registered or from a registration attempt made by a newer
       // version of the page running in another tab.
       // To minimize the possibility of a false positive, we use the logic here:
-
-      const updateLikelyTriggeredExternally = // Since we enforce only calling `register()` once, and since we don't
+      const updateLikelyTriggeredExternally =
+      // Since we enforce only calling `register()` once, and since we don't
       // add the `updatefound` event listener until the `register()` call, if
       // `_updateFoundCount` is > 0 then it means this method has already
       // been called, thus this SW must be external
-      this._updateFoundCount > 0 || // If the script URL of the installing SW is different from this
+      this._updateFoundCount > 0 ||
+      // If the script URL of the installing SW is different from this
       // instance's script URL, we know it's definitely not from our
       // registration.
-      !urlsMatch(installingSW.scriptURL, this._scriptURL.toString()) || // If all of the above are false, then we use a time-based heuristic:
+      !urlsMatch(installingSW.scriptURL, this._scriptURL.toString()) ||
+      // If all of the above are false, then we use a time-based heuristic:
       // Any `updatefound` event that occurs long after our registration is
       // assumed to be external.
-      performance.now() > this._registrationTime + REGISTRATION_TIMEOUT_DURATION ? // If any of the above are not true, we assume the update was
+      performance.now() > this._registrationTime + REGISTRATION_TIMEOUT_DURATION ?
+      // If any of the above are not true, we assume the update was
       // triggered by this instance.
       true : false;
-
       if (updateLikelyTriggeredExternally) {
         this._externalSW = installingSW;
         registration.removeEventListener('updatefound', this._onUpdateFound);
@@ -372,13 +341,10 @@ class Workbox extends WorkboxEventTarget {
         // If the update was not triggered externally we know the installing
         // SW is the one we registered, so we set it.
         this._sw = installingSW;
-
         this._ownSWs.add(installingSW);
-
-        this._swDeferred.resolve(installingSW); // The `installing` state isn't something we have a dedicated
+        this._swDeferred.resolve(installingSW);
+        // The `installing` state isn't something we have a dedicated
         // callback for, but we do log messages for it in development.
-
-
         {
           if (navigator.serviceWorker.controller) {
             logger.log('Updated service worker found. Installing now...');
@@ -386,21 +352,18 @@ class Workbox extends WorkboxEventTarget {
             logger.log('Service worker is installing...');
           }
         }
-      } // Increment the `updatefound` count, so future invocations of this
+      }
+      // Increment the `updatefound` count, so future invocations of this
       // method can be sure they were triggered externally.
-
-
-      ++this._updateFoundCount; // Add a `statechange` listener regardless of whether this update was
+      ++this._updateFoundCount;
+      // Add a `statechange` listener regardless of whether this update was
       // triggered externally, since we have callbacks for both.
-
       installingSW.addEventListener('statechange', this._onStateChange);
     };
     /**
      * @private
      * @param {Event} originalEvent
      */
-
-
     this._onStateChange = originalEvent => {
       // `this._registration` will never be `undefined` after an update is found.
       const registration = this._registration;
@@ -414,13 +377,10 @@ class Workbox extends WorkboxEventTarget {
         isExternal,
         originalEvent
       };
-
       if (!isExternal && this._isUpdate) {
         eventProps.isUpdate = true;
       }
-
       this.dispatchEvent(new WorkboxEvent(state, eventProps));
-
       if (state === 'installed') {
         // This timeout is used to ignore cases where the service worker calls
         // `skipWaiting()` in the install event, thus moving it directly in the
@@ -434,7 +394,6 @@ class Workbox extends WorkboxEventTarget {
           // Ensure the SW is still waiting (it may now be redundant).
           if (state === 'installed' && registration.waiting === sw) {
             this.dispatchEvent(new WorkboxEvent('waiting', eventProps));
-
             {
               if (isExternal) {
                 logger.warn('An external service worker has installed but is ' + 'waiting for this client to close before activating...');
@@ -446,12 +405,10 @@ class Workbox extends WorkboxEventTarget {
         }, WAITING_TIMEOUT_DURATION);
       } else if (state === 'activating') {
         clearTimeout(this._waitingTimeout);
-
         if (!isExternal) {
           this._activeDeferred.resolve(sw);
         }
       }
-
       {
         switch (state) {
           case 'installed':
@@ -460,29 +417,23 @@ class Workbox extends WorkboxEventTarget {
             } else {
               logger.log('Registered service worker installed.');
             }
-
             break;
-
           case 'activated':
             if (isExternal) {
               logger.warn('An external service worker has activated.');
             } else {
               logger.log('Registered service worker activated.');
-
               if (sw !== navigator.serviceWorker.controller) {
                 logger.warn('The registered service worker is active but ' + 'not yet controlling the page. Reload or run ' + '`clients.claim()` in the service worker.');
               }
             }
-
             break;
-
           case 'redundant':
             if (sw === this._compatibleControllingSW) {
               logger.log('Previously controlling service worker now redundant!');
             } else if (!isExternal) {
               logger.log('Registered service worker now redundant!');
             }
-
             break;
         }
       }
@@ -491,27 +442,23 @@ class Workbox extends WorkboxEventTarget {
      * @private
      * @param {Event} originalEvent
      */
-
-
     this._onControllerChange = originalEvent => {
       const sw = this._sw;
-      const isExternal = sw !== navigator.serviceWorker.controller; // Unconditionally dispatch the controlling event, with isExternal set
+      const isExternal = sw !== navigator.serviceWorker.controller;
+      // Unconditionally dispatch the controlling event, with isExternal set
       // to distinguish between controller changes due to the initial registration
       // vs. an update-check or other tab's registration.
       // See https://github.com/GoogleChrome/workbox/issues/2786
-
       this.dispatchEvent(new WorkboxEvent('controlling', {
         isExternal,
         originalEvent,
         sw,
         isUpdate: this._isUpdate
       }));
-
       if (!isExternal) {
         {
           logger.log('Registered service worker now controlling this page.');
         }
-
         this._controllingDeferred.resolve(sw);
       }
     };
@@ -519,8 +466,6 @@ class Workbox extends WorkboxEventTarget {
      * @private
      * @param {Event} originalEvent
      */
-
-
     this._onMessage = async originalEvent => {
       // Can't change type 'any' of data.
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -528,16 +473,16 @@ class Workbox extends WorkboxEventTarget {
         data,
         ports,
         source
-      } = originalEvent; // Wait until there's an "own" service worker. This is used to buffer
+      } = originalEvent;
+      // Wait until there's an "own" service worker. This is used to buffer
       // `message` events that may be received prior to calling `register()`.
-
-      await this.getSW(); // If the service worker that sent the message is in the list of own
+      await this.getSW();
+      // If the service worker that sent the message is in the list of own
       // service workers for this instance, dispatch a `message` event.
       // NOTE: we check for all previously owned service workers rather than
       // just the current one because some messages (e.g. cache updates) use
       // a timeout when sent and may be delayed long enough for a service worker
       // update to be found.
-
       if (this._ownSWs.has(source)) {
         this.dispatchEvent(new WorkboxEvent('message', {
           // Can't change type 'any' of data.
@@ -549,12 +494,11 @@ class Workbox extends WorkboxEventTarget {
         }));
       }
     };
-
     this._scriptURL = scriptURL;
-    this._registerOptions = registerOptions; // Add a message listener immediately since messages received during
+    this._registerOptions = registerOptions;
+    // Add a message listener immediately since messages received during
     // page load are buffered only until the DOMContentLoaded event:
     // https://github.com/GoogleChrome/workbox/issues/2202
-
     navigator.serviceWorker.addEventListener('message', this._onMessage);
   }
   /**
@@ -567,8 +511,6 @@ class Workbox extends WorkboxEventTarget {
    *     register the service worker immediately, even if the window has
    *     not loaded (not recommended).
    */
-
-
   async register({
     immediate = false
   } = {}) {
@@ -578,68 +520,56 @@ class Workbox extends WorkboxEventTarget {
         return;
       }
     }
-
     if (!immediate && document.readyState !== 'complete') {
       await new Promise(res => window.addEventListener('load', res));
-    } // Set this flag to true if any service worker was controlling the page
+    }
+    // Set this flag to true if any service worker was controlling the page
     // at registration time.
-
-
-    this._isUpdate = Boolean(navigator.serviceWorker.controller); // Before registering, attempt to determine if a SW is already controlling
+    this._isUpdate = Boolean(navigator.serviceWorker.controller);
+    // Before registering, attempt to determine if a SW is already controlling
     // the page, and if that SW script (and version, if specified) matches this
     // instance's script.
-
     this._compatibleControllingSW = this._getControllingSWIfCompatible();
-    this._registration = await this._registerScript(); // If we have a compatible controller, store the controller as the "own"
+    this._registration = await this._registerScript();
+    // If we have a compatible controller, store the controller as the "own"
     // SW, resolve active/controlling deferreds and add necessary listeners.
-
     if (this._compatibleControllingSW) {
       this._sw = this._compatibleControllingSW;
-
       this._activeDeferred.resolve(this._compatibleControllingSW);
-
       this._controllingDeferred.resolve(this._compatibleControllingSW);
-
       this._compatibleControllingSW.addEventListener('statechange', this._onStateChange, {
         once: true
       });
-    } // If there's a waiting service worker with a matching URL before the
+    }
+    // If there's a waiting service worker with a matching URL before the
     // `updatefound` event fires, it likely means that this site is open
     // in another tab, or the user refreshed the page (and thus the previous
     // page wasn't fully unloaded before this page started loading).
     // https://developers.google.com/web/fundamentals/primers/service-workers/lifecycle#waiting
-
-
     const waitingSW = this._registration.waiting;
-
     if (waitingSW && urlsMatch(waitingSW.scriptURL, this._scriptURL.toString())) {
       // Store the waiting SW as the "own" Sw, even if it means overwriting
       // a compatible controller.
-      this._sw = waitingSW; // Run this in the next microtask, so any code that adds an event
+      this._sw = waitingSW;
+      // Run this in the next microtask, so any code that adds an event
       // listener after awaiting `register()` will get this event.
-
       dontWaitFor(Promise.resolve().then(() => {
         this.dispatchEvent(new WorkboxEvent('waiting', {
           sw: waitingSW,
           wasWaitingBeforeRegister: true
         }));
-
         {
           logger.warn('A service worker was already waiting to activate ' + 'before this script was registered...');
         }
       }));
-    } // If an "own" SW is already set, resolve the deferred.
-
-
+    }
+    // If an "own" SW is already set, resolve the deferred.
     if (this._sw) {
       this._swDeferred.resolve(this._sw);
-
       this._ownSWs.add(this._sw);
     }
-
     {
       logger.log('Successfully registered service worker.', this._scriptURL.toString());
-
       if (navigator.serviceWorker.controller) {
         if (this._compatibleControllingSW) {
           logger.debug('A service worker with the same script URL ' + 'is already controlling this page.');
@@ -647,38 +577,30 @@ class Workbox extends WorkboxEventTarget {
           logger.debug('A service worker with a different script URL is ' + 'currently controlling the page. The browser is now fetching ' + 'the new script now...');
         }
       }
-
       const currentPageIsOutOfScope = () => {
         const scopeURL = new URL(this._registerOptions.scope || this._scriptURL.toString(), document.baseURI);
         const scopeURLBasePath = new URL('./', scopeURL.href).pathname;
         return !location.pathname.startsWith(scopeURLBasePath);
       };
-
       if (currentPageIsOutOfScope()) {
         logger.warn('The current page is not in scope for the registered ' + 'service worker. Was this a mistake?');
       }
     }
-
     this._registration.addEventListener('updatefound', this._onUpdateFound);
-
     navigator.serviceWorker.addEventListener('controllerchange', this._onControllerChange);
     return this._registration;
   }
   /**
    * Checks for updates of the registered service worker.
    */
-
-
   async update() {
     if (!this._registration) {
       {
         logger.error('Cannot update a Workbox instance without ' + 'being registered. Register the Workbox instance first.');
       }
-
       return;
-    } // Try to update registration
-
-
+    }
+    // Try to update registration
     await this._registration.update();
   }
   /**
@@ -690,8 +612,6 @@ class Workbox extends WorkboxEventTarget {
    *
    * @return {Promise<ServiceWorker>}
    */
-
-
   get active() {
     return this._activeDeferred.promise;
   }
@@ -707,8 +627,6 @@ class Workbox extends WorkboxEventTarget {
    *
    * @return {Promise<ServiceWorker>}
    */
-
-
   get controlling() {
     return this._controllingDeferred.promise;
   }
@@ -727,8 +645,6 @@ class Workbox extends WorkboxEventTarget {
    *
    * @return {Promise<ServiceWorker>}
    */
-
-
   getSW() {
     // If `this._sw` is set, resolve with that as we want `getSW()` to
     // return the correct (new) service worker if an update is found.
@@ -749,8 +665,6 @@ class Workbox extends WorkboxEventTarget {
    */
   // We might be able to change the 'data' type to Record<string, unknown> in the future.
   // eslint-disable-next-line @typescript-eslint/ban-types
-
-
   async messageSW(data) {
     const sw = await this.getSW();
     return messageSW(sw, data);
@@ -762,8 +676,6 @@ class Workbox extends WorkboxEventTarget {
    * If there is no current registration or no service worker is `waiting`,
    * calling this will have no effect.
    */
-
-
   messageSkipWaiting() {
     if (this._registration && this._registration.waiting) {
       void messageSW(this._registration.waiting, SKIP_WAITING_MESSAGE);
@@ -776,11 +688,8 @@ class Workbox extends WorkboxEventTarget {
    * @private
    * @return {ServiceWorker|undefined}
    */
-
-
   _getControllingSWIfCompatible() {
     const controller = navigator.serviceWorker.controller;
-
     if (controller && urlsMatch(controller.scriptURL, this._scriptURL.toString())) {
       return controller;
     } else {
@@ -793,32 +702,28 @@ class Workbox extends WorkboxEventTarget {
    *
    * @private
    */
-
-
   async _registerScript() {
     try {
       // this._scriptURL may be a TrustedScriptURL, but there's no support for
       // passing that to register() in lib.dom right now.
       // https://github.com/GoogleChrome/workbox/issues/2855
-      const reg = await navigator.serviceWorker.register(this._scriptURL, this._registerOptions); // Keep track of when registration happened, so it can be used in the
+      const reg = await navigator.serviceWorker.register(this._scriptURL, this._registerOptions);
+      // Keep track of when registration happened, so it can be used in the
       // `this._onUpdateFound` heuristic. Also use the presence of this
       // property as a way to see if `.register()` has been called.
-
       this._registrationTime = performance.now();
       return reg;
     } catch (error) {
       {
         logger.error(error);
-      } // Re-throw the error.
-
-
+      }
+      // Re-throw the error.
       throw error;
     }
   }
-
 }
+// The jsdoc comments below outline the events this instance may dispatch:
 // -----------------------------------------------------------------------
-
 /**
  * The `message` event is dispatched any time a `postMessage` is received.
  *
@@ -831,7 +736,6 @@ class Workbox extends WorkboxEventTarget {
  * @property {MessagePort[]} ports The `ports` value from `originalEvent`.
  * @property {Workbox} target The `Workbox` instance.
  */
-
 /**
  * The `installed` event is dispatched if the state of a
  * {@link workbox-window.Workbox} instance's
@@ -854,7 +758,6 @@ class Workbox extends WorkboxEventTarget {
  * @property {string} type `installed`.
  * @property {Workbox} target The `Workbox` instance.
  */
-
 /**
  * The `waiting` event is dispatched if the state of a
  * {@link workbox-window.Workbox} instance's
@@ -882,7 +785,6 @@ class Workbox extends WorkboxEventTarget {
  * @property {string} type `waiting`.
  * @property {Workbox} target The `Workbox` instance.
  */
-
 /**
  * The `controlling` event is dispatched if a
  * [`controllerchange`]{@link https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/oncontrollerchange}
@@ -904,7 +806,6 @@ class Workbox extends WorkboxEventTarget {
  * @property {string} type `controlling`.
  * @property {Workbox} target The `Workbox` instance.
  */
-
 /**
  * The `activated` event is dispatched if the state of a
  * {@link workbox-window.Workbox} instance's
@@ -923,7 +824,6 @@ class Workbox extends WorkboxEventTarget {
  * @property {string} type `activated`.
  * @property {Workbox} target The `Workbox` instance.
  */
-
 /**
  * The `redundant` event is dispatched if the state of a
  * {@link workbox-window.Workbox} instance's

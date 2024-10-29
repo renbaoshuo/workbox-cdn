@@ -2,8 +2,9 @@ this.workbox = this.workbox || {};
 this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidate_js, CacheFirst_js, CacheableResponsePlugin_js, ExpirationPlugin_js, NetworkFirst_js, setCatchHandler_js, matchPrecache_js) {
     'use strict';
 
+    // @ts-ignore
     try {
-      self['workbox:recipes:7.0.0'] && _();
+      self['workbox:recipes:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -23,19 +24,18 @@ this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidat
      * @param {number} [options.maxAgeSeconds] Maximum age, in seconds, that font entries will be cached for. Defaults to 1 year
      * @param {number} [options.maxEntries] Maximum number of fonts that will be cached. Defaults to 30
      */
-
     function googleFontsCache(options = {}) {
       const sheetCacheName = `${options.cachePrefix || 'google-fonts'}-stylesheets`;
       const fontCacheName = `${options.cachePrefix || 'google-fonts'}-webfonts`;
       const maxAgeSeconds = options.maxAgeSeconds || 60 * 60 * 24 * 365;
-      const maxEntries = options.maxEntries || 30; // Cache the Google Fonts stylesheets with a stale-while-revalidate strategy.
-
+      const maxEntries = options.maxEntries || 30;
+      // Cache the Google Fonts stylesheets with a stale-while-revalidate strategy.
       registerRoute_js.registerRoute(({
         url
       }) => url.origin === 'https://fonts.googleapis.com', new StaleWhileRevalidate_js.StaleWhileRevalidate({
         cacheName: sheetCacheName
-      })); // Cache the underlying font files with a cache-first strategy for 1 year.
-
+      }));
+      // Cache the underlying font files with a cache-first strategy for 1 year.
       registerRoute_js.registerRoute(({
         url
       }) => url.origin === 'https://fonts.gstatic.com', new CacheFirst_js.CacheFirst({
@@ -56,7 +56,6 @@ this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidat
      * @param {string[]} options.urls Paths to warm the strategy's cache with
      * @param {Strategy} options.strategy Strategy to use
      */
-
     function warmStrategyCache(options) {
       self.addEventListener('install', event => {
         const done = options.urls.map(path => options.strategy.handleAll({
@@ -87,12 +86,10 @@ this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidat
      * @param {WorkboxPlugin[]} [options.plugins] Additional plugins to use for this recipe
      * @param {string[]} [options.warmCache] Paths to call to use to warm this cache
      */
-
     function imageCache(options = {}) {
       const defaultMatchCallback = ({
         request
       }) => request.destination === 'image';
-
       const cacheName = options.cacheName || 'images';
       const matchCallback = options.matchCallback || defaultMatchCallback;
       const maxAgeSeconds = options.maxAgeSeconds || 30 * 24 * 60 * 60;
@@ -109,8 +106,8 @@ this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidat
         cacheName,
         plugins
       });
-      registerRoute_js.registerRoute(matchCallback, strategy); // Warms the cache
-
+      registerRoute_js.registerRoute(matchCallback, strategy);
+      // Warms the cache
       if (options.warmCache) {
         warmStrategyCache({
           urls: options.warmCache,
@@ -137,12 +134,10 @@ this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidat
      * @param {WorkboxPlugin[]} [options.plugins] Additional plugins to use for this recipe
      * @param {string[]} [options.warmCache] Paths to call to use to warm this cache
      */
-
     function staticResourceCache(options = {}) {
       const defaultMatchCallback = ({
         request
       }) => request.destination === 'style' || request.destination === 'script' || request.destination === 'worker';
-
       const cacheName = options.cacheName || 'static-resources';
       const matchCallback = options.matchCallback || defaultMatchCallback;
       const plugins = options.plugins || [];
@@ -153,8 +148,8 @@ this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidat
         cacheName,
         plugins
       });
-      registerRoute_js.registerRoute(matchCallback, strategy); // Warms the cache
-
+      registerRoute_js.registerRoute(matchCallback, strategy);
+      // Warms the cache
       if (options.warmCache) {
         warmStrategyCache({
           urls: options.warmCache,
@@ -182,12 +177,10 @@ this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidat
      * @param {WorkboxPlugin[]} [options.plugins] Additional plugins to use for this recipe
      * @param {string[]} [options.warmCache] Paths to call to use to warm this cache
      */
-
     function pageCache(options = {}) {
       const defaultMatchCallback = ({
         request
       }) => request.mode === 'navigate';
-
       const cacheName = options.cacheName || 'pages';
       const matchCallback = options.matchCallback || defaultMatchCallback;
       const networkTimeoutSeconds = options.networkTimeoutSeconds || 3;
@@ -199,10 +192,10 @@ this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidat
         networkTimeoutSeconds,
         cacheName,
         plugins
-      }); // Registers the route
-
-      registerRoute_js.registerRoute(matchCallback, strategy); // Warms the cache
-
+      });
+      // Registers the route
+      registerRoute_js.registerRoute(matchCallback, strategy);
+      // Warms the cache
       if (options.warmCache) {
         warmStrategyCache({
           urls: options.warmCache,
@@ -228,47 +221,37 @@ this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidat
      * @param {string} [options.imageFallback] Precache name to match for image fallbacks.
      * @param {string} [options.fontFallback] Precache name to match for font fallbacks.
      */
-
     function offlineFallback(options = {}) {
       const pageFallback = options.pageFallback || 'offline.html';
       const imageFallback = options.imageFallback || false;
       const fontFallback = options.fontFallback || false;
       self.addEventListener('install', event => {
         const files = [pageFallback];
-
         if (imageFallback) {
           files.push(imageFallback);
         }
-
         if (fontFallback) {
           files.push(fontFallback);
         }
-
         event.waitUntil(self.caches.open('workbox-offline-fallbacks').then(cache => cache.addAll(files)));
       });
-
       const handler = async options => {
         const dest = options.request.destination;
         const cache = await self.caches.open('workbox-offline-fallbacks');
-
         if (dest === 'document') {
           const match = (await matchPrecache_js.matchPrecache(pageFallback)) || (await cache.match(pageFallback));
           return match || Response.error();
         }
-
         if (dest === 'image' && imageFallback !== false) {
           const match = (await matchPrecache_js.matchPrecache(imageFallback)) || (await cache.match(imageFallback));
           return match || Response.error();
         }
-
         if (dest === 'font' && fontFallback !== false) {
           const match = (await matchPrecache_js.matchPrecache(fontFallback)) || (await cache.match(fontFallback));
           return match || Response.error();
         }
-
         return Response.error();
       };
-
       setCatchHandler_js.setCatchHandler(handler);
     }
 
@@ -281,5 +264,5 @@ this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidat
 
     return exports;
 
-}({}, workbox.routing, workbox.strategies, workbox.strategies, workbox.cacheableResponse, workbox.expiration, workbox.strategies, workbox.routing, workbox.precaching));
+})({}, workbox.routing, workbox.strategies, workbox.strategies, workbox.cacheableResponse, workbox.expiration, workbox.strategies, workbox.routing, workbox.precaching);
 

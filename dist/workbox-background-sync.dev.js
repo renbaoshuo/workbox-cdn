@@ -3,60 +3,50 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
   'use strict';
 
   function _extends() {
-    _extends = Object.assign || function (target) {
+    _extends = Object.assign ? Object.assign.bind() : function (target) {
       for (var i = 1; i < arguments.length; i++) {
         var source = arguments[i];
-
         for (var key in source) {
           if (Object.prototype.hasOwnProperty.call(source, key)) {
             target[key] = source[key];
           }
         }
       }
-
       return target;
     };
-
     return _extends.apply(this, arguments);
   }
 
   const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
-
   let idbProxyableTypes;
-  let cursorAdvanceMethods; // This is a function to prevent it throwing up in node environments.
-
+  let cursorAdvanceMethods;
+  // This is a function to prevent it throwing up in node environments.
   function getIdbProxyableTypes() {
     return idbProxyableTypes || (idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction]);
-  } // This is a function to prevent it throwing up in node environments.
-
-
+  }
+  // This is a function to prevent it throwing up in node environments.
   function getCursorAdvanceMethods() {
     return cursorAdvanceMethods || (cursorAdvanceMethods = [IDBCursor.prototype.advance, IDBCursor.prototype.continue, IDBCursor.prototype.continuePrimaryKey]);
   }
-
   const cursorRequestMap = new WeakMap();
   const transactionDoneMap = new WeakMap();
   const transactionStoreNamesMap = new WeakMap();
   const transformCache = new WeakMap();
   const reverseTransformCache = new WeakMap();
-
   function promisifyRequest(request) {
     const promise = new Promise((resolve, reject) => {
       const unlisten = () => {
         request.removeEventListener('success', success);
         request.removeEventListener('error', error);
       };
-
       const success = () => {
         resolve(wrap(request.result));
         unlisten();
       };
-
       const error = () => {
         reject(request.error);
         unlisten();
       };
-
       request.addEventListener('success', success);
       request.addEventListener('error', error);
     });
@@ -65,15 +55,14 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
       // (see wrapFunction).
       if (value instanceof IDBCursor) {
         cursorRequestMap.set(value, request);
-      } // Catching to avoid "Uncaught Promise exceptions"
-
-    }).catch(() => {}); // This mapping exists in reverseTransformCache but doesn't doesn't exist in transformCache. This
+      }
+      // Catching to avoid "Uncaught Promise exceptions"
+    }).catch(() => {});
+    // This mapping exists in reverseTransformCache but doesn't doesn't exist in transformCache. This
     // is because we create many promises from a single IDBRequest.
-
     reverseTransformCache.set(promise, request);
     return promise;
   }
-
   function cacheDonePromiseForTransaction(tx) {
     // Early bail if we've already created a done promise for this transaction.
     if (transactionDoneMap.has(tx)) return;
@@ -83,64 +72,52 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
         tx.removeEventListener('error', error);
         tx.removeEventListener('abort', error);
       };
-
       const complete = () => {
         resolve();
         unlisten();
       };
-
       const error = () => {
         reject(tx.error || new DOMException('AbortError', 'AbortError'));
         unlisten();
       };
-
       tx.addEventListener('complete', complete);
       tx.addEventListener('error', error);
       tx.addEventListener('abort', error);
-    }); // Cache it for later retrieval.
-
+    });
+    // Cache it for later retrieval.
     transactionDoneMap.set(tx, done);
   }
-
   let idbProxyTraps = {
     get(target, prop, receiver) {
       if (target instanceof IDBTransaction) {
         // Special handling for transaction.done.
-        if (prop === 'done') return transactionDoneMap.get(target); // Polyfill for objectStoreNames because of Edge.
-
+        if (prop === 'done') return transactionDoneMap.get(target);
+        // Polyfill for objectStoreNames because of Edge.
         if (prop === 'objectStoreNames') {
           return target.objectStoreNames || transactionStoreNamesMap.get(target);
-        } // Make tx.store return the only store in the transaction, or undefined if there are many.
-
-
+        }
+        // Make tx.store return the only store in the transaction, or undefined if there are many.
         if (prop === 'store') {
           return receiver.objectStoreNames[1] ? undefined : receiver.objectStore(receiver.objectStoreNames[0]);
         }
-      } // Else transform whatever we get back.
-
-
+      }
+      // Else transform whatever we get back.
       return wrap(target[prop]);
     },
-
     set(target, prop, value) {
       target[prop] = value;
       return true;
     },
-
     has(target, prop) {
       if (target instanceof IDBTransaction && (prop === 'done' || prop === 'store')) {
         return true;
       }
-
       return prop in target;
     }
-
   };
-
   function replaceTraps(callback) {
     idbProxyTraps = callback(idbProxyTraps);
   }
-
   function wrapFunction(func) {
     // Due to expected object equality (which is enforced by the caching in `wrap`), we
     // only create one new func per func.
@@ -151,13 +128,12 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
         transactionStoreNamesMap.set(tx, storeNames.sort ? storeNames.sort() : [storeNames]);
         return wrap(tx);
       };
-    } // Cursor methods are special, as the behaviour is a little more different to standard IDB. In
+    }
+    // Cursor methods are special, as the behaviour is a little more different to standard IDB. In
     // IDB, you advance the cursor and wait for a new 'success' on the IDBRequest that gave you the
     // cursor. It's kinda like a promise that can resolve with many values. That doesn't make sense
     // with real promises, so each advance methods returns a new promise for the cursor object, or
     // undefined if the end of the cursor has been reached.
-
-
     if (getCursorAdvanceMethods().includes(func)) {
       return function (...args) {
         // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
@@ -166,42 +142,37 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
         return wrap(cursorRequestMap.get(this));
       };
     }
-
     return function (...args) {
       // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
       // the original object.
       return wrap(func.apply(unwrap(this), args));
     };
   }
-
   function transformCachableValue(value) {
-    if (typeof value === 'function') return wrapFunction(value); // This doesn't return, it just creates a 'done' promise for the transaction,
+    if (typeof value === 'function') return wrapFunction(value);
+    // This doesn't return, it just creates a 'done' promise for the transaction,
     // which is later returned for transaction.done (see idbObjectHandler).
-
     if (value instanceof IDBTransaction) cacheDonePromiseForTransaction(value);
-    if (instanceOfAny(value, getIdbProxyableTypes())) return new Proxy(value, idbProxyTraps); // Return the same value back if we're not going to transform it.
-
+    if (instanceOfAny(value, getIdbProxyableTypes())) return new Proxy(value, idbProxyTraps);
+    // Return the same value back if we're not going to transform it.
     return value;
   }
-
   function wrap(value) {
     // We sometimes generate multiple promises from a single IDBRequest (eg when cursoring), because
     // IDB is weird and a single IDBRequest can yield many responses, so these can't be cached.
-    if (value instanceof IDBRequest) return promisifyRequest(value); // If we've already transformed this value before, reuse the transformed value.
+    if (value instanceof IDBRequest) return promisifyRequest(value);
+    // If we've already transformed this value before, reuse the transformed value.
     // This is faster, but it also provides object equality.
-
     if (transformCache.has(value)) return transformCache.get(value);
-    const newValue = transformCachableValue(value); // Not all types are transformed.
+    const newValue = transformCachableValue(value);
+    // Not all types are transformed.
     // These may be primitive types, so they can't be WeakMap keys.
-
     if (newValue !== value) {
       transformCache.set(value, newValue);
       reverseTransformCache.set(newValue, value);
     }
-
     return newValue;
   }
-
   const unwrap = value => reverseTransformCache.get(value);
 
   /**
@@ -211,7 +182,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
    * @param version Schema version.
    * @param callbacks Additional callbacks.
    */
-
   function openDB(name, version, {
     blocked,
     upgrade,
@@ -220,13 +190,11 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
   } = {}) {
     const request = indexedDB.open(name, version);
     const openPromise = wrap(request);
-
     if (upgrade) {
       request.addEventListener('upgradeneeded', event => {
         upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction));
       });
     }
-
     if (blocked) request.addEventListener('blocked', () => blocked());
     openPromise.then(db => {
       if (terminated) db.addEventListener('close', () => terminated());
@@ -234,50 +202,45 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
     }).catch(() => {});
     return openPromise;
   }
-
   const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
   const writeMethods = ['put', 'add', 'delete', 'clear'];
   const cachedMethods = new Map();
-
   function getMethod(target, prop) {
     if (!(target instanceof IDBDatabase && !(prop in target) && typeof prop === 'string')) {
       return;
     }
-
     if (cachedMethods.get(prop)) return cachedMethods.get(prop);
     const targetFuncName = prop.replace(/FromIndex$/, '');
     const useIndex = prop !== targetFuncName;
     const isWrite = writeMethods.includes(targetFuncName);
-
-    if ( // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
+    if (
+    // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
     !(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype) || !(isWrite || readMethods.includes(targetFuncName))) {
       return;
     }
-
     const method = async function (storeName, ...args) {
       // isWrite ? 'readwrite' : undefined gzipps better, but fails in Edge :(
       const tx = this.transaction(storeName, isWrite ? 'readwrite' : 'readonly');
       let target = tx.store;
-      if (useIndex) target = target.index(args.shift()); // Must reject if op rejects.
+      if (useIndex) target = target.index(args.shift());
+      // Must reject if op rejects.
       // If it's a write operation, must reject if tx.done rejects.
       // Must reject with op rejection first.
       // Must resolve with op value.
       // Must handle both promises (no unhandled rejections)
-
       return (await Promise.all([target[targetFuncName](...args), isWrite && tx.done]))[0];
     };
-
     cachedMethods.set(prop, method);
     return method;
   }
-
   replaceTraps(oldTraps => _extends({}, oldTraps, {
     get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
     has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop)
   }));
 
+  // @ts-ignore
   try {
-    self['workbox:background-sync:7.0.0'] && _();
+    self['workbox:background-sync:7.2.0'] && _();
   } catch (e) {}
 
   /*
@@ -298,7 +261,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
    *
    * @private
    */
-
   class QueueDb {
     constructor() {
       this._db = null;
@@ -308,8 +270,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @param {UnidentifiedQueueStoreEntry} entry
      */
-
-
     async addEntry(entry) {
       const db = await this.getDb();
       const tx = db.transaction(REQUEST_OBJECT_STORE_NAME, 'readwrite', {
@@ -323,8 +283,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @return {number | undefined}
      */
-
-
     async getFirstEntryId() {
       const db = await this.getDb();
       const cursor = await db.transaction(REQUEST_OBJECT_STORE_NAME).store.openCursor();
@@ -336,8 +294,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @param queueName
      * @return {Promise<QueueStoreEntry[]>}
      */
-
-
     async getAllEntriesByQueueName(queueName) {
       const db = await this.getDb();
       const results = await db.getAllFromIndex(REQUEST_OBJECT_STORE_NAME, QUEUE_NAME_INDEX, IDBKeyRange.only(queueName));
@@ -349,8 +305,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @param queueName
      * @return {Promise<number>}
      */
-
-
     async getEntryCountByQueueName(queueName) {
       const db = await this.getDb();
       return db.countFromIndex(REQUEST_OBJECT_STORE_NAME, QUEUE_NAME_INDEX, IDBKeyRange.only(queueName));
@@ -360,8 +314,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @param {number} id the id of the entry to be deleted
      */
-
-
     async deleteEntry(id) {
       const db = await this.getDb();
       await db.delete(REQUEST_OBJECT_STORE_NAME, id);
@@ -371,8 +323,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @param queueName
      * @returns {Promise<QueueStoreEntry | undefined>}
      */
-
-
     async getFirstEntryByQueueName(queueName) {
       return await this.getEndEntryFromIndex(IDBKeyRange.only(queueName), 'next');
     }
@@ -381,8 +331,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @param queueName
      * @returns {Promise<QueueStoreEntry | undefined>}
      */
-
-
     async getLastEntryByQueueName(queueName) {
       return await this.getEndEntryFromIndex(IDBKeyRange.only(queueName), 'prev');
     }
@@ -395,8 +343,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @return {Promise<QueueStoreEntry | undefined>}
      * @private
      */
-
-
     async getEndEntryFromIndex(query, direction) {
       const db = await this.getDb();
       const cursor = await db.transaction(REQUEST_OBJECT_STORE_NAME).store.index(QUEUE_NAME_INDEX).openCursor(query, direction);
@@ -407,15 +353,12 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @private
      */
-
-
     async getDb() {
       if (!this._db) {
         this._db = await openDB(DB_NAME, DB_VERSION, {
           upgrade: this._upgradeDb
         });
       }
-
       return this._db;
     }
     /**
@@ -425,15 +368,12 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @param {number} oldVersion
      * @private
      */
-
-
     _upgradeDb(db, oldVersion) {
       if (oldVersion > 0 && oldVersion < DB_VERSION) {
         if (db.objectStoreNames.contains(REQUEST_OBJECT_STORE_NAME)) {
           db.deleteObjectStore(REQUEST_OBJECT_STORE_NAME);
         }
       }
-
       const objStore = db.createObjectStore(REQUEST_OBJECT_STORE_NAME, {
         autoIncrement: true,
         keyPath: 'id'
@@ -442,7 +382,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
         unique: false
       });
     }
-
   }
 
   /*
@@ -459,7 +398,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
    * Most developers will not need to access this class directly;
    * it is exposed for advanced use cases.
    */
-
   class QueueStore {
     /**
      * Associates this instance with a Queue instance, so entries added can be
@@ -479,8 +417,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @param {number} [entry.timestamp]
      * @param {Object} [entry.metadata]
      */
-
-
     async pushEntry(entry) {
       {
         assert_js.assert.isType(entry, 'object', {
@@ -495,9 +431,8 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
           funcName: 'pushEntry',
           paramName: 'entry.requestData'
         });
-      } // Don't specify an ID since one is automatically generated.
-
-
+      }
+      // Don't specify an ID since one is automatically generated.
       delete entry.id;
       entry.queueName = this._queueName;
       await this._queueDb.addEntry(entry);
@@ -510,8 +445,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @param {number} [entry.timestamp]
      * @param {Object} [entry.metadata]
      */
-
-
     async unshiftEntry(entry) {
       {
         assert_js.assert.isType(entry, 'object', {
@@ -527,9 +460,7 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
           paramName: 'entry.requestData'
         });
       }
-
       const firstId = await this._queueDb.getFirstEntryId();
-
       if (firstId) {
         // Pick an ID one less than the lowest ID in the object store.
         entry.id = firstId - 1;
@@ -537,7 +468,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
         // Otherwise let the auto-incrementor assign the ID.
         delete entry.id;
       }
-
       entry.queueName = this._queueName;
       await this._queueDb.addEntry(entry);
     }
@@ -546,8 +476,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @return {Promise<QueueStoreEntry|undefined>}
      */
-
-
     async popEntry() {
       return this._removeEntry(await this._queueDb.getLastEntryByQueueName(this._queueName));
     }
@@ -556,8 +484,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @return {Promise<QueueStoreEntry|undefined>}
      */
-
-
     async shiftEntry() {
       return this._removeEntry(await this._queueDb.getFirstEntryByQueueName(this._queueName));
     }
@@ -567,8 +493,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @param {Object} options See {@link workbox-background-sync.Queue~getAll}
      * @return {Promise<Array<Object>>}
      */
-
-
     async getAll() {
       return await this._queueDb.getAllEntriesByQueueName(this._queueName);
     }
@@ -578,8 +502,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @param {Object} options See {@link workbox-background-sync.Queue~size}
      * @return {Promise<number>}
      */
-
-
     async size() {
       return await this._queueDb.getEntryCountByQueueName(this._queueName);
     }
@@ -593,8 +515,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @param {number} id
      */
-
-
     async deleteEntry(id) {
       await this._queueDb.deleteEntry(id);
     }
@@ -605,16 +525,12 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @return {Promise<QueueStoreEntry|undefined>}
      * @private
      */
-
-
     async _removeEntry(entry) {
       if (entry) {
         await this.deleteEntry(entry.id);
       }
-
       return entry;
     }
-
   }
 
   /*
@@ -632,7 +548,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
    * Most developers will not need to access this class directly;
    * it is exposed for advanced use cases.
    */
-
   class StorableRequest {
     /**
      * Converts a Request object to a plain object that can be structured
@@ -645,28 +560,25 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
       const requestData = {
         url: request.url,
         headers: {}
-      }; // Set the body if present.
-
+      };
+      // Set the body if present.
       if (request.method !== 'GET') {
         // Use ArrayBuffer to support non-text request bodies.
         // NOTE: we can't use Blobs becuse Safari doesn't support storing
         // Blobs in IndexedDB in some cases:
         // https://github.com/dfahlander/Dexie.js/issues/618#issuecomment-398348457
         requestData.body = await request.clone().arrayBuffer();
-      } // Convert the headers from an iterable to an object.
-
-
+      }
+      // Convert the headers from an iterable to an object.
       for (const [key, value] of request.headers.entries()) {
         requestData.headers[key] = value;
-      } // Add all other serializable request properties
-
-
+      }
+      // Add all other serializable request properties
       for (const prop of serializableProperties) {
         if (request[prop] !== undefined) {
           requestData[prop] = request[prop];
         }
       }
-
       return new StorableRequest(requestData);
     }
     /**
@@ -677,8 +589,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *     `url` plus any relevant properties of
      *     [requestInit]{@link https://fetch.spec.whatwg.org/#requestinit}.
      */
-
-
     constructor(requestData) {
       {
         assert_js.assert.isType(requestData, 'object', {
@@ -693,14 +603,12 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
           funcName: 'constructor',
           paramName: 'requestData.url'
         });
-      } // If the request's mode is `navigate`, convert it to `same-origin` since
+      }
+      // If the request's mode is `navigate`, convert it to `same-origin` since
       // navigation requests can't be constructed via script.
-
-
       if (requestData['mode'] === 'navigate') {
         requestData['mode'] = 'same-origin';
       }
-
       this._requestData = requestData;
     }
     /**
@@ -708,16 +616,12 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @return {Object}
      */
-
-
     toObject() {
       const requestData = Object.assign({}, this._requestData);
       requestData.headers = Object.assign({}, this._requestData.headers);
-
       if (requestData.body) {
         requestData.body = requestData.body.slice(0);
       }
-
       return requestData;
     }
     /**
@@ -725,8 +629,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @return {Request}
      */
-
-
     toRequest() {
       return new Request(this._requestData.url, this._requestData);
     }
@@ -735,12 +637,9 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @return {StorableRequest}
      */
-
-
     clone() {
       return new StorableRequest(this.toObject());
     }
-
   }
 
   /*
@@ -752,7 +651,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
   */
   const TAG_PREFIX = 'workbox-background-sync';
   const MAX_RETENTION_TIME = 60 * 24 * 7; // 7 days in minutes
-
   const queueNames = new Set();
   /**
    * Converts a QueueStore entry into the format exposed by Queue. This entails
@@ -763,17 +661,14 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
    * @return {Queue}
    * @private
    */
-
   const convertEntry = queueStoreEntry => {
     const queueEntry = {
       request: new StorableRequest(queueStoreEntry.requestData).toRequest(),
       timestamp: queueStoreEntry.timestamp
     };
-
     if (queueStoreEntry.metadata) {
       queueEntry.metadata = queueStoreEntry.metadata;
     }
-
     return queueEntry;
   };
   /**
@@ -783,8 +678,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
    *
    * @memberof workbox-background-sync
    */
-
-
   class Queue {
     /**
      * Creates an instance of Queue with the given options
@@ -817,8 +710,8 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
       maxRetentionTime
     } = {}) {
       this._syncInProgress = false;
-      this._requestsAddedDuringSync = false; // Ensure the store name is not already being used
-
+      this._requestsAddedDuringSync = false;
+      // Ensure the store name is not already being used
       if (queueNames.has(name)) {
         throw new WorkboxError_js.WorkboxError('duplicate-queue-name', {
           name
@@ -826,20 +719,16 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
       } else {
         queueNames.add(name);
       }
-
       this._name = name;
       this._onSync = onSync || this.replayRequests;
       this._maxRetentionTime = maxRetentionTime || MAX_RETENTION_TIME;
       this._forceSyncFallback = Boolean(forceSyncFallback);
       this._queueStore = new QueueStore(this._name);
-
       this._addSyncListener();
     }
     /**
      * @return {string}
      */
-
-
     get name() {
       return this._name;
     }
@@ -859,8 +748,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *     for you (defaulting to `Date.now()`), but you can update it if you
      *     don't want particular requests to expire.
      */
-
-
     async pushRequest(entry) {
       {
         assert_js.assert.isType(entry, 'object', {
@@ -876,7 +763,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
           paramName: 'entry.request'
         });
       }
-
       await this._addRequest(entry, 'push');
     }
     /**
@@ -895,8 +781,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *     for you (defaulting to `Date.now()`), but you can update it if you
      *     don't want particular requests to expire.
      */
-
-
     async unshiftRequest(entry) {
       {
         assert_js.assert.isType(entry, 'object', {
@@ -912,7 +796,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
           paramName: 'entry.request'
         });
       }
-
       await this._addRequest(entry, 'unshift');
     }
     /**
@@ -922,8 +805,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @return {Promise<QueueEntry | undefined>}
      */
-
-
     async popRequest() {
       return this._removeRequest('pop');
     }
@@ -934,8 +815,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @return {Promise<QueueEntry | undefined>}
      */
-
-
     async shiftRequest() {
       return this._removeRequest('shift');
     }
@@ -945,25 +824,20 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @return {Promise<Array<QueueEntry>>}
      */
-
-
     async getAll() {
       const allEntries = await this._queueStore.getAll();
       const now = Date.now();
       const unexpiredEntries = [];
-
       for (const entry of allEntries) {
         // Ignore requests older than maxRetentionTime. Call this function
         // recursively until an unexpired request is found.
         const maxRetentionTimeInMs = this._maxRetentionTime * 60 * 1000;
-
         if (now - entry.timestamp > maxRetentionTimeInMs) {
           await this._queueStore.deleteEntry(entry.id);
         } else {
           unexpiredEntries.push(convertEntry(entry));
         }
       }
-
       return unexpiredEntries;
     }
     /**
@@ -972,8 +846,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @return {Promise<number>}
      */
-
-
     async size() {
       return await this._queueStore.size();
     }
@@ -987,8 +859,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @param {string} operation ('push' or 'unshift')
      * @private
      */
-
-
     async _addRequest({
       request,
       metadata,
@@ -998,29 +868,25 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
       const entry = {
         requestData: storableRequest.toObject(),
         timestamp
-      }; // Only include metadata if it's present.
-
+      };
+      // Only include metadata if it's present.
       if (metadata) {
         entry.metadata = metadata;
       }
-
       switch (operation) {
         case 'push':
           await this._queueStore.pushEntry(entry);
           break;
-
         case 'unshift':
           await this._queueStore.unshiftEntry(entry);
           break;
       }
-
       {
         logger_js.logger.log(`Request for '${getFriendlyURL_js.getFriendlyURL(request.url)}' has ` + `been added to background sync queue '${this._name}'.`);
-      } // Don't register for a sync if we're in the middle of a sync. Instead,
+      }
+      // Don't register for a sync if we're in the middle of a sync. Instead,
       // we wait until the sync is complete and call register if
       // `this._requestsAddedDuringSync` is true.
-
-
       if (this._syncInProgress) {
         this._requestsAddedDuringSync = true;
       } else {
@@ -1035,31 +901,24 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * @return {Object|undefined}
      * @private
      */
-
-
     async _removeRequest(operation) {
       const now = Date.now();
       let entry;
-
       switch (operation) {
         case 'pop':
           entry = await this._queueStore.popEntry();
           break;
-
         case 'shift':
           entry = await this._queueStore.shiftEntry();
           break;
       }
-
       if (entry) {
         // Ignore requests older than maxRetentionTime. Call this function
         // recursively until an unexpired request is found.
         const maxRetentionTimeInMs = this._maxRetentionTime * 60 * 1000;
-
         if (now - entry.timestamp > maxRetentionTimeInMs) {
           return this._removeRequest(operation);
         }
-
         return convertEntry(entry);
       } else {
         return undefined;
@@ -1070,31 +929,24 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      * If any request fails to re-fetch, it's put back in the same position in
      * the queue (which registers a retry for the next sync event).
      */
-
-
     async replayRequests() {
       let entry;
-
       while (entry = await this.shiftRequest()) {
         try {
           await fetch(entry.request.clone());
-
           if ("dev" !== 'production') {
             logger_js.logger.log(`Request for '${getFriendlyURL_js.getFriendlyURL(entry.request.url)}' ` + `has been replayed in queue '${this._name}'`);
           }
         } catch (error) {
           await this.unshiftRequest(entry);
-
           {
             logger_js.logger.log(`Request for '${getFriendlyURL_js.getFriendlyURL(entry.request.url)}' ` + `failed to replay, putting it back in queue '${this._name}'`);
           }
-
           throw new WorkboxError_js.WorkboxError('queue-replay-failed', {
             name: this._name
           });
         }
       }
-
       {
         logger_js.logger.log(`All requests in queue '${this.name}' have successfully ` + `replayed; the queue is now empty!`);
       }
@@ -1102,8 +954,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
     /**
      * Registers a sync event with a tag unique to this instance.
      */
-
-
     async registerSync() {
       // See https://github.com/GoogleChrome/workbox/issues/2393
       if ('sync' in self.registration && !this._forceSyncFallback) {
@@ -1125,8 +975,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @private
      */
-
-
     _addSyncListener() {
       // See https://github.com/GoogleChrome/workbox/issues/2393
       if ('sync' in self.registration && !this._forceSyncFallback) {
@@ -1135,20 +983,18 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
             {
               logger_js.logger.log(`Background sync for tag '${event.tag}' ` + `has been received`);
             }
-
             const syncComplete = async () => {
               this._syncInProgress = true;
               let syncError;
-
               try {
                 await this._onSync({
                   queue: this
                 });
               } catch (error) {
                 if (error instanceof Error) {
-                  syncError = error; // Rethrow the error. Note: the logic in the finally clause
+                  syncError = error;
+                  // Rethrow the error. Note: the logic in the finally clause
                   // will run before this gets rethrown.
-
                   throw syncError;
                 }
               } finally {
@@ -1160,23 +1006,20 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
                 if (this._requestsAddedDuringSync && !(syncError && !event.lastChance)) {
                   await this.registerSync();
                 }
-
                 this._syncInProgress = false;
                 this._requestsAddedDuringSync = false;
               }
             };
-
             event.waitUntil(syncComplete());
           }
         });
       } else {
         {
           logger_js.logger.log(`Background sync replaying without background sync event`);
-        } // If the browser doesn't support background sync, or the developer has
+        }
+        // If the browser doesn't support background sync, or the developer has
         // opted-in to not using it, retry every time the service worker starts up
         // as a fallback.
-
-
         void this._onSync({
           queue: this
         });
@@ -1190,12 +1033,9 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
      *
      * @private
      */
-
-
     static get _queueNames() {
       return queueNames;
     }
-
   }
 
   /*
@@ -1211,7 +1051,6 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
    *
    * @memberof workbox-background-sync
    */
-
   class BackgroundSyncPlugin {
     /**
      * @param {string} name See the {@link workbox-background-sync.Queue}
@@ -1233,10 +1072,8 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
           request
         });
       };
-
       this._queue = new Queue(name, options);
     }
-
   }
 
   exports.BackgroundSyncPlugin = BackgroundSyncPlugin;
@@ -1246,5 +1083,5 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
 
   return exports;
 
-}({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private));
+})({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private);
 

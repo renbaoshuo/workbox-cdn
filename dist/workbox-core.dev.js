@@ -2,8 +2,9 @@ this.workbox = this.workbox || {};
 this.workbox.core = (function (exports) {
     'use strict';
 
+    // @ts-ignore
     try {
-      self['workbox:core:7.0.0'] && _();
+      self['workbox:core:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -18,7 +19,6 @@ this.workbox.core = (function (exports) {
       if (!('__WB_DISABLE_DEV_LOGS' in globalThis)) {
         self.__WB_DISABLE_DEV_LOGS = false;
       }
-
       let inGroup = false;
       const methodToColorMap = {
         debug: `#7f8c8d`,
@@ -27,14 +27,11 @@ this.workbox.core = (function (exports) {
         error: `#c0392b`,
         groupCollapsed: `#3498db`,
         groupEnd: null // No colored prefix on groupEnd
-
       };
-
       const print = function (method, args) {
         if (self.__WB_DISABLE_DEV_LOGS) {
           return;
         }
-
         if (method === 'groupCollapsed') {
           // Safari doesn't print all console.groupCollapsed() arguments:
           // https://bugs.webkit.org/show_bug.cgi?id=182754
@@ -43,33 +40,26 @@ this.workbox.core = (function (exports) {
             return;
           }
         }
-
-        const styles = [`background: ${methodToColorMap[method]}`, `border-radius: 0.5em`, `color: white`, `font-weight: bold`, `padding: 2px 0.5em`]; // When in a group, the workbox prefix is not displayed.
-
+        const styles = [`background: ${methodToColorMap[method]}`, `border-radius: 0.5em`, `color: white`, `font-weight: bold`, `padding: 2px 0.5em`];
+        // When in a group, the workbox prefix is not displayed.
         const logPrefix = inGroup ? [] : ['%cworkbox', styles.join(';')];
         console[method](...logPrefix, ...args);
-
         if (method === 'groupCollapsed') {
           inGroup = true;
         }
-
         if (method === 'groupEnd') {
           inGroup = false;
         }
-      }; // eslint-disable-next-line @typescript-eslint/ban-types
-
-
+      };
+      // eslint-disable-next-line @typescript-eslint/ban-types
       const api = {};
       const loggerMethods = Object.keys(methodToColorMap);
-
       for (const key of loggerMethods) {
         const method = key;
-
         api[method] = (...args) => {
           print(method, args);
         };
       }
-
       return api;
     })();
 
@@ -89,7 +79,6 @@ this.workbox.core = (function (exports) {
         if (!paramName || !validValueDescription) {
           throw new Error(`Unexpected input to 'invalid-value' error.`);
         }
-
         return `The '${paramName}' parameter was given a value with an ` + `unexpected value. ${validValueDescription} Received a value of ` + `${JSON.stringify(value)}.`;
       },
       'not-an-array': ({
@@ -101,7 +90,6 @@ this.workbox.core = (function (exports) {
         if (!moduleName || !className || !funcName || !paramName) {
           throw new Error(`Unexpected input to 'not-an-array' error.`);
         }
-
         return `The parameter '${paramName}' passed into ` + `'${moduleName}.${className}.${funcName}()' must be an array.`;
       },
       'incorrect-type': ({
@@ -114,7 +102,6 @@ this.workbox.core = (function (exports) {
         if (!expectedType || !paramName || !moduleName || !funcName) {
           throw new Error(`Unexpected input to 'incorrect-type' error.`);
         }
-
         const classNameStr = className ? `${className}.` : '';
         return `The parameter '${paramName}' passed into ` + `'${moduleName}.${classNameStr}` + `${funcName}()' must be of type ${expectedType}.`;
       },
@@ -129,13 +116,10 @@ this.workbox.core = (function (exports) {
         if (!expectedClassName || !moduleName || !funcName) {
           throw new Error(`Unexpected input to 'incorrect-class' error.`);
         }
-
         const classNameStr = className ? `${className}.` : '';
-
         if (isReturnValueProblem) {
           return `The return value from ` + `'${moduleName}.${classNameStr}${funcName}()' ` + `must be an instance of class ${expectedClassName}.`;
         }
-
         return `The parameter '${paramName}' passed into ` + `'${moduleName}.${classNameStr}${funcName}()' ` + `must be an instance of class ${expectedClassName}.`;
       },
       'missing-a-method': ({
@@ -148,7 +132,6 @@ this.workbox.core = (function (exports) {
         if (!expectedMethod || !paramName || !moduleName || !className || !funcName) {
           throw new Error(`Unexpected input to 'missing-a-method' error.`);
         }
-
         return `${moduleName}.${className}.${funcName}() expected the ` + `'${paramName}' parameter to expose a '${expectedMethod}' method.`;
       },
       'add-to-cache-list-unexpected-type': ({
@@ -163,7 +146,6 @@ this.workbox.core = (function (exports) {
         if (!firstEntry || !secondEntry) {
           throw new Error(`Unexpected input to ` + `'add-to-cache-list-duplicate-entries' error.`);
         }
-
         return `Two of the entries passed to ` + `'workbox-precaching.PrecacheController.addToCacheList()' had the URL ` + `${firstEntry} but different revision details. Workbox is ` + `unable to cache and version the asset correctly. Please remove one ` + `of the entries.`;
       },
       'plugin-error-request-will-fetch': ({
@@ -172,7 +154,6 @@ this.workbox.core = (function (exports) {
         if (!thrownErrorMessage) {
           throw new Error(`Unexpected input to ` + `'plugin-error-request-will-fetch', error.`);
         }
-
         return `An error was thrown by a plugins 'requestWillFetch()' method. ` + `The thrown error message was: '${thrownErrorMessage}'.`;
       },
       'invalid-cache-name': ({
@@ -182,7 +163,6 @@ this.workbox.core = (function (exports) {
         if (!cacheNameId) {
           throw new Error(`Expected a 'cacheNameId' for error 'invalid-cache-name'`);
         }
-
         return `You must provide a name containing at least one character for ` + `setCacheDetails({${cacheNameId}: '...'}). Received a value of ` + `'${JSON.stringify(value)}'`;
       },
       'unregister-route-but-not-found-with-method': ({
@@ -191,7 +171,6 @@ this.workbox.core = (function (exports) {
         if (!method) {
           throw new Error(`Unexpected input to ` + `'unregister-route-but-not-found-with-method' error.`);
         }
-
         return `The route you're trying to unregister was not  previously ` + `registered for the method type '${method}'.`;
       },
       'unregister-route-route-not-registered': () => {
@@ -253,7 +232,6 @@ this.workbox.core = (function (exports) {
         if (!paramName || !moduleName || !funcName) {
           throw new Error(`Unexpected input to 'invalid-string' error.`);
         }
-
         return `When using strings, the '${paramName}' parameter must start with ` + `'http' (for cross-origin matches) or '/' (for same-origin matches). ` + `Please see the docs for ${moduleName}.${funcName}() for ` + `more info.`;
       },
       'channel-name-required': () => {
@@ -271,7 +249,6 @@ this.workbox.core = (function (exports) {
         if (!normalizedRangeHeader) {
           throw new Error(`Unexpected input to 'unit-must-be-bytes' error.`);
         }
-
         return `The 'unit' portion of the Range header must be set to 'bytes'. ` + `The Range header provided was "${normalizedRangeHeader}"`;
       },
       'single-range-only': ({
@@ -280,7 +257,6 @@ this.workbox.core = (function (exports) {
         if (!normalizedRangeHeader) {
           throw new Error(`Unexpected input to 'single-range-only' error.`);
         }
-
         return `Multiple ranges are not supported. Please use a  single start ` + `value, and optional end value. The Range header provided was ` + `"${normalizedRangeHeader}"`;
       },
       'invalid-range-values': ({
@@ -289,7 +265,6 @@ this.workbox.core = (function (exports) {
         if (!normalizedRangeHeader) {
           throw new Error(`Unexpected input to 'invalid-range-values' error.`);
         }
-
         return `The Range header is missing both start and end values. At least ` + `one of those values is needed. The Range header provided was ` + `"${normalizedRangeHeader}"`;
       },
       'no-range-header': () => {
@@ -318,11 +293,9 @@ this.workbox.core = (function (exports) {
         error
       }) => {
         let message = `The strategy could not generate a response for '${url}'.`;
-
         if (error) {
           message += ` The underlying error is ${error}.`;
         }
-
         return message;
       },
       'bad-precaching-response': ({
@@ -356,11 +329,9 @@ this.workbox.core = (function (exports) {
         type
       }) => {
         const message = `One of the workbox-streams sources resulted in an ` + `'${type}' response.`;
-
         if (type === 'opaqueredirect') {
           return `${message} Please do not use a navigation request that results ` + `in a redirect as a source.`;
         }
-
         return `${message} Please ensure your sources are CORS-enabled.`;
       }
     };
@@ -372,17 +343,13 @@ this.workbox.core = (function (exports) {
       license that can be found in the LICENSE file or at
       https://opensource.org/licenses/MIT.
     */
-
     const generatorFunction = (code, details = {}) => {
       const message = messages[code];
-
       if (!message) {
         throw new Error(`Unable to find message for code '${code}'.`);
       }
-
       return message(details);
     };
-
     const messageGenerator = generatorFunction;
 
     /*
@@ -401,7 +368,6 @@ this.workbox.core = (function (exports) {
      *
      * @private
      */
-
     class WorkboxError extends Error {
       /**
        *
@@ -417,7 +383,6 @@ this.workbox.core = (function (exports) {
         this.name = errorCode;
         this.details = details;
       }
-
     }
 
     /*
@@ -433,30 +398,26 @@ this.workbox.core = (function (exports) {
      * The destructed and restructured object is so it's clear what is
      * needed.
      */
-
     const isArray = (value, details) => {
       if (!Array.isArray(value)) {
         throw new WorkboxError('not-an-array', details);
       }
     };
-
     const hasMethod = (object, expectedMethod, details) => {
       const type = typeof object[expectedMethod];
-
       if (type !== 'function') {
         details['expectedMethod'] = expectedMethod;
         throw new WorkboxError('missing-a-method', details);
       }
     };
-
     const isType = (object, expectedType, details) => {
       if (typeof object !== expectedType) {
         details['expectedType'] = expectedType;
         throw new WorkboxError('incorrect-type', details);
       }
     };
-
-    const isInstance = (object, // Need the general type to do the check later.
+    const isInstance = (object,
+    // Need the general type to do the check later.
     // eslint-disable-next-line @typescript-eslint/ban-types
     expectedClass, details) => {
       if (!(object instanceof expectedClass)) {
@@ -464,30 +425,27 @@ this.workbox.core = (function (exports) {
         throw new WorkboxError('incorrect-class', details);
       }
     };
-
     const isOneOf = (value, validValues, details) => {
       if (!validValues.includes(value)) {
         details['validValueDescription'] = `Valid values are ${JSON.stringify(validValues)}.`;
         throw new WorkboxError('invalid-value', details);
       }
     };
-
-    const isArrayOfClass = (value, // Need general type to do check later.
-    expectedClass, // eslint-disable-line
+    const isArrayOfClass = (value,
+    // Need general type to do check later.
+    expectedClass,
+    // eslint-disable-line
     details) => {
       const error = new WorkboxError('not-array-of-class', details);
-
       if (!Array.isArray(value)) {
         throw error;
       }
-
       for (const item of value) {
         if (!(item instanceof expectedClass)) {
           throw error;
         }
       }
     };
-
     const finalAssertExports = {
       hasMethod,
       isArray,
@@ -504,9 +462,9 @@ this.workbox.core = (function (exports) {
       license that can be found in the LICENSE file or at
       https://opensource.org/licenses/MIT.
     */
+    // Callbacks to be executed whenever there's a quota error.
     // Can't change Function type right now.
     // eslint-disable-next-line @typescript-eslint/ban-types
-
     const quotaErrorCallbacks = new Set();
 
     /*
@@ -525,7 +483,6 @@ this.workbox.core = (function (exports) {
      */
     // Can't change Function type
     // eslint-disable-next-line @typescript-eslint/ban-types
-
     function registerQuotaErrorCallback(callback) {
       {
         finalAssertExports.isType(callback, 'function', {
@@ -534,9 +491,7 @@ this.workbox.core = (function (exports) {
           paramName: 'callback'
         });
       }
-
       quotaErrorCallbacks.add(callback);
-
       {
         logger.log('Registered a callback to respond to quota errors.', callback);
       }
@@ -556,17 +511,14 @@ this.workbox.core = (function (exports) {
       runtime: 'runtime',
       suffix: typeof registration !== 'undefined' ? registration.scope : ''
     };
-
     const _createCacheName = cacheName => {
       return [_cacheNameDetails.prefix, cacheName, _cacheNameDetails.suffix].filter(value => value && value.length > 0).join('-');
     };
-
     const eachCacheNameDetail = fn => {
       for (const key of Object.keys(_cacheNameDetails)) {
         fn(key);
       }
     };
-
     const cacheNames$1 = {
       updateDetails: details => {
         eachCacheNameDetail(key => {
@@ -598,14 +550,11 @@ this.workbox.core = (function (exports) {
       license that can be found in the LICENSE file or at
       https://opensource.org/licenses/MIT.
     */
-
     function stripParams(fullURL, ignoreParams) {
       const strippedURL = new URL(fullURL);
-
       for (const param of ignoreParams) {
         strippedURL.searchParams.delete(param);
       }
-
       return strippedURL.href;
     }
     /**
@@ -620,29 +569,23 @@ this.workbox.core = (function (exports) {
      * @param {Array<string>} ignoreParams
      * @return {Promise<Response|undefined>}
      */
-
-
     async function cacheMatchIgnoreParams(cache, request, ignoreParams, matchOptions) {
-      const strippedRequestURL = stripParams(request.url, ignoreParams); // If the request doesn't include any ignored params, match as normal.
-
+      const strippedRequestURL = stripParams(request.url, ignoreParams);
+      // If the request doesn't include any ignored params, match as normal.
       if (request.url === strippedRequestURL) {
         return cache.match(request, matchOptions);
-      } // Otherwise, match by comparing keys
-
-
+      }
+      // Otherwise, match by comparing keys
       const keysOptions = Object.assign(Object.assign({}, matchOptions), {
         ignoreSearch: true
       });
       const cacheKeys = await cache.keys(request, keysOptions);
-
       for (const cacheKey of cacheKeys) {
         const strippedCacheKeyURL = stripParams(cacheKey.url, ignoreParams);
-
         if (strippedRequestURL === strippedCacheKeyURL) {
           return cache.match(cacheKey, matchOptions);
         }
       }
-
       return;
     }
 
@@ -664,21 +607,18 @@ this.workbox.core = (function (exports) {
      *
      * @private
      */
-
     function canConstructReadableStream() {
       if (supportStatus$1 === undefined) {
         // See https://github.com/GoogleChrome/workbox/issues/1473
         try {
           new ReadableStream({
             start() {}
-
           });
           supportStatus$1 = true;
         } catch (error) {
           supportStatus$1 = false;
         }
       }
-
       return supportStatus$1;
     }
 
@@ -699,11 +639,9 @@ this.workbox.core = (function (exports) {
      *
      * @private
      */
-
     function canConstructResponseFromBodyStream() {
       if (supportStatus === undefined) {
         const testResponse = new Response('');
-
         if ('body' in testResponse) {
           try {
             new Response(testResponse.body);
@@ -712,10 +650,8 @@ this.workbox.core = (function (exports) {
             supportStatus = false;
           }
         }
-
         supportStatus = false;
       }
-
       return supportStatus;
     }
 
@@ -730,7 +666,6 @@ this.workbox.core = (function (exports) {
      *
      * @private
      **/
-
     function dontWaitFor(promise) {
       // Effective no-op.
       void promise.then(() => {});
@@ -751,7 +686,6 @@ this.workbox.core = (function (exports) {
      *
      * @private
      */
-
     class Deferred {
       /**
        * Creates a promise and exposes its resolve and reject functions as methods.
@@ -762,7 +696,6 @@ this.workbox.core = (function (exports) {
           this.reject = reject;
         });
       }
-
     }
 
     /*
@@ -779,20 +712,16 @@ this.workbox.core = (function (exports) {
      * @memberof workbox-core
      * @private
      */
-
     async function executeQuotaErrorCallbacks() {
       {
         logger.log(`About to run ${quotaErrorCallbacks.size} ` + `callbacks to clean up caches.`);
       }
-
       for (const callback of quotaErrorCallbacks) {
         await callback();
-
         {
           logger.log(callback, 'is complete.');
         }
       }
-
       {
         logger.log('Finished running callbacks.');
       }
@@ -805,11 +734,10 @@ this.workbox.core = (function (exports) {
       license that can be found in the LICENSE file or at
       https://opensource.org/licenses/MIT.
     */
-
     const getFriendlyURL = url => {
-      const urlObj = new URL(String(url), location.href); // See https://github.com/GoogleChrome/workbox/issues/2323
+      const urlObj = new URL(String(url), location.href);
+      // See https://github.com/GoogleChrome/workbox/issues/2323
       // We want to include everything, except for the origin if it's same-origin.
-
       return urlObj.href.replace(new RegExp(`^${location.origin}`), '');
     };
 
@@ -827,7 +755,6 @@ this.workbox.core = (function (exports) {
      * @return {Promise}
      * @private
      */
-
     function timeout(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -849,19 +776,17 @@ this.workbox.core = (function (exports) {
      * @return {Promise<Client|undefined>}
      * @private
      */
-
     async function resultingClientExists(resultingClientId) {
       if (!resultingClientId) {
         return;
       }
-
       let existingWindows = await self.clients.matchAll({
         type: 'window'
       });
       const existingWindowIds = new Set(existingWindows.map(w => w.id));
       let resultingWindow;
-      const startTime = performance.now(); // Only wait up to `MAX_RETRY_TIME` to find a matching client.
-
+      const startTime = performance.now();
+      // Only wait up to `MAX_RETRY_TIME` to find a matching client.
       while (performance.now() - startTime < MAX_RETRY_TIME) {
         existingWindows = await self.clients.matchAll({
           type: 'window'
@@ -875,15 +800,12 @@ this.workbox.core = (function (exports) {
             return !existingWindowIds.has(w.id);
           }
         });
-
         if (resultingWindow) {
           break;
-        } // Sleep for 100ms and retry.
-
-
+        }
+        // Sleep for 100ms and retry.
         await timeout(100);
       }
-
       return resultingWindow;
     }
 
@@ -902,7 +824,6 @@ this.workbox.core = (function (exports) {
      * @return {Function}
      * @private
      */
-
     function waitUntil(event, asyncFn) {
       const returnPromise = asyncFn();
       event.waitUntil(returnPromise);
@@ -957,28 +878,22 @@ this.workbox.core = (function (exports) {
      *
      * @memberof workbox-core
      */
-
     const cacheNames = {
       get googleAnalytics() {
         return cacheNames$1.getGoogleAnalyticsName();
       },
-
       get precache() {
         return cacheNames$1.getPrecacheName();
       },
-
       get prefix() {
         return cacheNames$1.getPrefix();
       },
-
       get runtime() {
         return cacheNames$1.getRuntimeName();
       },
-
       get suffix() {
         return cacheNames$1.getSuffix();
       }
-
     };
 
     /*
@@ -1007,33 +922,30 @@ this.workbox.core = (function (exports) {
      * @param {Function} modifier
      * @memberof workbox-core
      */
-
     async function copyResponse(response, modifier) {
-      let origin = null; // If response.url isn't set, assume it's cross-origin and keep origin null.
-
+      let origin = null;
+      // If response.url isn't set, assume it's cross-origin and keep origin null.
       if (response.url) {
         const responseURL = new URL(response.url);
         origin = responseURL.origin;
       }
-
       if (origin !== self.location.origin) {
         throw new WorkboxError('cross-origin-copy-response', {
           origin
         });
       }
-
-      const clonedResponse = response.clone(); // Create a fresh `ResponseInit` object by cloning the headers.
-
+      const clonedResponse = response.clone();
+      // Create a fresh `ResponseInit` object by cloning the headers.
       const responseInit = {
         headers: new Headers(clonedResponse.headers),
         status: clonedResponse.status,
         statusText: clonedResponse.statusText
-      }; // Apply any user modifications.
-
-      const modifiedResponseInit = modifier ? modifier(responseInit) : responseInit; // Create the new response from the body stream and `ResponseInit`
+      };
+      // Apply any user modifications.
+      const modifiedResponseInit = modifier ? modifier(responseInit) : responseInit;
+      // Create the new response from the body stream and `ResponseInit`
       // modifications. Note: not all browsers support the Response.body stream,
       // so fall back to reading the entire body into memory as a blob.
-
       const body = canConstructResponseFromBodyStream() ? clonedResponse.body : await clonedResponse.blob();
       return new Response(body, modifiedResponseInit);
     }
@@ -1051,7 +963,6 @@ this.workbox.core = (function (exports) {
      *
      * @memberof workbox-core
      */
-
     function clientsClaim() {
       self.addEventListener('activate', () => self.clients.claim());
     }
@@ -1080,7 +991,6 @@ this.workbox.core = (function (exports) {
      *
      * @memberof workbox-core
      */
-
     function setCacheNameDetails(details) {
       {
         Object.keys(details).forEach(key => {
@@ -1090,21 +1000,18 @@ this.workbox.core = (function (exports) {
             paramName: `details.${key}`
           });
         });
-
         if ('precache' in details && details['precache'].length === 0) {
           throw new WorkboxError('invalid-cache-name', {
             cacheNameId: 'precache',
             value: details['precache']
           });
         }
-
         if ('runtime' in details && details['runtime'].length === 0) {
           throw new WorkboxError('invalid-cache-name', {
             cacheNameId: 'runtime',
             value: details['runtime']
           });
         }
-
         if ('googleAnalytics' in details && details['googleAnalytics'].length === 0) {
           throw new WorkboxError('invalid-cache-name', {
             cacheNameId: 'googleAnalytics',
@@ -1112,7 +1019,6 @@ this.workbox.core = (function (exports) {
           });
         }
       }
-
       cacheNames$1.updateDetails(details);
     }
 
@@ -1130,14 +1036,12 @@ this.workbox.core = (function (exports) {
      *
      * @memberof workbox-core
      */
-
     function skipWaiting() {
       // Just call self.skipWaiting() directly.
       // See https://github.com/GoogleChrome/workbox/issues/2525
       {
         logger.warn(`skipWaiting() from workbox-core is no longer recommended ` + `and will be removed in Workbox v7. Using self.skipWaiting() instead ` + `is equivalent.`);
       }
-
       void self.skipWaiting();
     }
 
@@ -1151,5 +1055,5 @@ this.workbox.core = (function (exports) {
 
     return exports;
 
-}({}));
+})({});
 

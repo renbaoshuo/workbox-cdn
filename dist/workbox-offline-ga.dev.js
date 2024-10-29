@@ -2,8 +2,9 @@ this.workbox = this.workbox || {};
 this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cacheNames_js, getFriendlyURL_js, logger_js, Route_js, Router_js, NetworkFirst_js, NetworkOnly_js) {
     'use strict';
 
+    // @ts-ignore
     try {
-      self['workbox:google-analytics:7.0.0'] && _();
+      self['workbox:google-analytics:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -15,16 +16,15 @@ this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cach
     */
     const QUEUE_NAME = 'workbox-google-analytics';
     const MAX_RETENTION_TIME = 60 * 48; // Two days in minutes
-
     const GOOGLE_ANALYTICS_HOST = 'www.google-analytics.com';
     const GTM_HOST = 'www.googletagmanager.com';
     const ANALYTICS_JS_PATH = '/analytics.js';
     const GTAG_JS_PATH = '/gtag/js';
     const GTM_JS_PATH = '/gtm.js';
+    // This RegExp matches all known Measurement Protocol single-hit collect
     // endpoints. Most of the time the default path (/collect) is used, but
     // occasionally an experimental endpoint is used when testing new features,
     // (e.g. /r/collect or /j/collect)
-
     const COLLECT_PATHS_REGEX = /^\/(\w+\/)?collect/;
 
     /*
@@ -45,45 +45,40 @@ this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cach
      *
      * @private
      */
-
     const createOnSyncCallback = config => {
       return async ({
         queue
       }) => {
         let entry;
-
         while (entry = await queue.shiftRequest()) {
           const {
             request,
             timestamp
           } = entry;
           const url = new URL(request.url);
-
           try {
             // Measurement protocol requests can set their payload parameters in
             // either the URL query string (for GET requests) or the POST body.
-            const params = request.method === 'POST' ? new URLSearchParams(await request.clone().text()) : url.searchParams; // Calculate the qt param, accounting for the fact that an existing
+            const params = request.method === 'POST' ? new URLSearchParams(await request.clone().text()) : url.searchParams;
+            // Calculate the qt param, accounting for the fact that an existing
             // qt param may be present and should be updated rather than replaced.
-
             const originalHitTime = timestamp - (Number(params.get('qt')) || 0);
-            const queueTime = Date.now() - originalHitTime; // Set the qt param prior to applying hitFilter or parameterOverrides.
-
-            params.set('qt', String(queueTime)); // Apply `parameterOverrides`, if set.
-
+            const queueTime = Date.now() - originalHitTime;
+            // Set the qt param prior to applying hitFilter or parameterOverrides.
+            params.set('qt', String(queueTime));
+            // Apply `parameterOverrides`, if set.
             if (config.parameterOverrides) {
               for (const param of Object.keys(config.parameterOverrides)) {
                 const value = config.parameterOverrides[param];
                 params.set(param, value);
               }
-            } // Apply `hitFilter`, if set.
-
-
+            }
+            // Apply `hitFilter`, if set.
             if (typeof config.hitFilter === 'function') {
               config.hitFilter.call(null, params);
-            } // Retry the fetch. Ignore URL search params from the URL as they're
+            }
+            // Retry the fetch. Ignore URL search params from the URL as they're
             // now in the post body.
-
-
             await fetch(new Request(url.origin + url.pathname, {
               body: params.toString(),
               method: 'POST',
@@ -93,21 +88,17 @@ this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cach
                 'Content-Type': 'text/plain'
               }
             }));
-
             if ("dev" !== 'production') {
               logger_js.logger.log(`Request for '${getFriendlyURL_js.getFriendlyURL(url.href)}' ` + `has been replayed`);
             }
           } catch (err) {
             await queue.unshiftRequest(entry);
-
             {
               logger_js.logger.log(`Request for '${getFriendlyURL_js.getFriendlyURL(url.href)}' ` + `failed to replay, putting it back in the queue.`);
             }
-
             throw err;
           }
         }
-
         {
           logger_js.logger.log(`All Google Analytics request successfully replayed; ` + `the queue is now empty!`);
         }
@@ -121,13 +112,10 @@ this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cach
      *
      * @private
      */
-
-
     const createCollectRoutes = bgSyncPlugin => {
       const match = ({
         url
       }) => url.hostname === GOOGLE_ANALYTICS_HOST && COLLECT_PATHS_REGEX.test(url.pathname);
-
       const handler = new NetworkOnly_js.NetworkOnly({
         plugins: [bgSyncPlugin]
       });
@@ -141,13 +129,10 @@ this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cach
      *
      * @private
      */
-
-
     const createAnalyticsJsRoute = cacheName => {
       const match = ({
         url
       }) => url.hostname === GOOGLE_ANALYTICS_HOST && url.pathname === ANALYTICS_JS_PATH;
-
       const handler = new NetworkFirst_js.NetworkFirst({
         cacheName
       });
@@ -161,13 +146,10 @@ this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cach
      *
      * @private
      */
-
-
     const createGtagJsRoute = cacheName => {
       const match = ({
         url
       }) => url.hostname === GTM_HOST && url.pathname === GTAG_JS_PATH;
-
       const handler = new NetworkFirst_js.NetworkFirst({
         cacheName
       });
@@ -181,13 +163,10 @@ this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cach
      *
      * @private
      */
-
-
     const createGtmJsRoute = cacheName => {
       const match = ({
         url
       }) => url.hostname === GTM_HOST && url.pathname === GTM_JS_PATH;
-
       const handler = new NetworkFirst_js.NetworkFirst({
         cacheName
       });
@@ -209,8 +188,6 @@ this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cach
      *
      * @memberof workbox-google-analytics
      */
-
-
     const initialize = (options = {}) => {
       const cacheName = cacheNames_js.cacheNames.getGoogleAnalyticsName(options.cacheName);
       const bgSyncPlugin = new BackgroundSyncPlugin_js.BackgroundSyncPlugin(QUEUE_NAME, {
@@ -219,11 +196,9 @@ this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cach
       });
       const routes = [createGtmJsRoute(cacheName), createAnalyticsJsRoute(cacheName), createGtagJsRoute(cacheName), ...createCollectRoutes(bgSyncPlugin)];
       const router = new Router_js.Router();
-
       for (const route of routes) {
         router.registerRoute(route);
       }
-
       router.addFetchListener();
     };
 
@@ -231,5 +206,5 @@ this.workbox.googleAnalytics = (function (exports, BackgroundSyncPlugin_js, cach
 
     return exports;
 
-}({}, workbox.backgroundSync, workbox.core._private, workbox.core._private, workbox.core._private, workbox.routing, workbox.routing, workbox.strategies, workbox.strategies));
+})({}, workbox.backgroundSync, workbox.core._private, workbox.core._private, workbox.core._private, workbox.routing, workbox.routing, workbox.strategies, workbox.strategies);
 

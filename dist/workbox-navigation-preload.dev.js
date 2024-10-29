@@ -2,8 +2,9 @@ this.workbox = this.workbox || {};
 this.workbox.navigationPreload = (function (exports, logger_js) {
     'use strict';
 
+    // @ts-ignore
     try {
-      self['workbox:navigation-preload:7.0.0'] && _();
+      self['workbox:navigation-preload:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -19,7 +20,6 @@ this.workbox.navigationPreload = (function (exports, logger_js) {
      *
      * @memberof workbox-navigation-preload
      */
-
     function isSupported() {
       return Boolean(self.registration && self.registration.navigationPreload);
     }
@@ -36,7 +36,6 @@ this.workbox.navigationPreload = (function (exports, logger_js) {
      *
      * @memberof workbox-navigation-preload
      */
-
     function disable() {
       if (isSupported()) {
         self.addEventListener('activate', event => {
@@ -70,7 +69,6 @@ this.workbox.navigationPreload = (function (exports, logger_js) {
      *
      * @memberof workbox-navigation-preload
      */
-
     function enable(headerValue) {
       if (isSupported()) {
         self.addEventListener('activate', event => {
@@ -79,7 +77,6 @@ this.workbox.navigationPreload = (function (exports, logger_js) {
             if (headerValue) {
               void self.registration.navigationPreload.setHeaderValue(headerValue);
             }
-
             {
               logger_js.logger.log(`Navigation preload is enabled.`);
             }
@@ -98,5 +95,5 @@ this.workbox.navigationPreload = (function (exports, logger_js) {
 
     return exports;
 
-}({}, workbox.core._private));
+})({}, workbox.core._private);
 

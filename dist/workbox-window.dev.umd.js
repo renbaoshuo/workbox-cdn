@@ -2,10 +2,11 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
     typeof define === 'function' && define.amd ? define(['exports'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.workbox = {}));
-}(this, (function (exports) { 'use strict';
+})(this, (function (exports) { 'use strict';
 
+    // @ts-ignore
     try {
-      self['workbox:window:7.0.0'] && _();
+      self['workbox:window:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -31,41 +32,59 @@
      */
     // Better not change type of data.
     // eslint-disable-next-line @typescript-eslint/ban-types
-
     function messageSW(sw, data) {
       return new Promise(function (resolve) {
         var messageChannel = new MessageChannel();
-
         messageChannel.port1.onmessage = function (event) {
           resolve(event.data);
         };
-
         sw.postMessage(data, [messageChannel.port2]);
       });
     }
 
+    function _toPrimitive(t, r) {
+      if ("object" != typeof t || !t) return t;
+      var e = t[Symbol.toPrimitive];
+      if (void 0 !== e) {
+        var i = e.call(t, r || "default");
+        if ("object" != typeof i) return i;
+        throw new TypeError("@@toPrimitive must return a primitive value.");
+      }
+      return ("string" === r ? String : Number)(t);
+    }
+    function _toPropertyKey(t) {
+      var i = _toPrimitive(t, "string");
+      return "symbol" == typeof i ? i : i + "";
+    }
     function _defineProperties(target, props) {
       for (var i = 0; i < props.length; i++) {
         var descriptor = props[i];
         descriptor.enumerable = descriptor.enumerable || false;
         descriptor.configurable = true;
         if ("value" in descriptor) descriptor.writable = true;
-        Object.defineProperty(target, descriptor.key, descriptor);
+        Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor);
       }
     }
-
     function _createClass(Constructor, protoProps, staticProps) {
       if (protoProps) _defineProperties(Constructor.prototype, protoProps);
       if (staticProps) _defineProperties(Constructor, staticProps);
+      Object.defineProperty(Constructor, "prototype", {
+        writable: false
+      });
       return Constructor;
     }
-
     function _inheritsLoose(subClass, superClass) {
       subClass.prototype = Object.create(superClass.prototype);
       subClass.prototype.constructor = subClass;
-      subClass.__proto__ = superClass;
+      _setPrototypeOf(subClass, superClass);
     }
-
+    function _setPrototypeOf(o, p) {
+      _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
+        o.__proto__ = p;
+        return o;
+      };
+      return _setPrototypeOf(o, p);
+    }
     function _unsupportedIterableToArray(o, minLen) {
       if (!o) return;
       if (typeof o === "string") return _arrayLikeToArray(o, minLen);
@@ -74,42 +93,33 @@
       if (n === "Map" || n === "Set") return Array.from(o);
       if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
     }
-
     function _arrayLikeToArray(arr, len) {
       if (len == null || len > arr.length) len = arr.length;
-
       for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-
       return arr2;
     }
-
     function _createForOfIteratorHelperLoose(o, allowArrayLike) {
-      var it;
-
-      if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {
-        if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
-          if (it) o = it;
-          var i = 0;
-          return function () {
-            if (i >= o.length) return {
-              done: true
-            };
-            return {
-              done: false,
-              value: o[i++]
-            };
+      var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+      if (it) return (it = it.call(o)).next.bind(it);
+      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+        if (it) o = it;
+        var i = 0;
+        return function () {
+          if (i >= o.length) return {
+            done: true
           };
-        }
-
-        throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+          return {
+            done: false,
+            value: o[i++]
+          };
+        };
       }
-
-      it = o[Symbol.iterator]();
-      return it.next.bind(it);
+      throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
     }
 
+    // @ts-ignore
     try {
-      self['workbox:core:7.0.0'] && _();
+      self['workbox:core:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -127,14 +137,12 @@
      *
      * @private
      */
-
     var Deferred =
     /**
      * Creates a promise and exposes its resolve and reject functions as methods.
      */
     function Deferred() {
       var _this = this;
-
       this.promise = new Promise(function (resolve, reject) {
         _this.resolve = resolve;
         _this.reject = reject;
@@ -152,7 +160,6 @@
      *
      * @private
      **/
-
     function dontWaitFor(promise) {
       // Effective no-op.
       void promise.then(function () {});
@@ -170,7 +177,6 @@
       if (!('__WB_DISABLE_DEV_LOGS' in globalThis)) {
         self.__WB_DISABLE_DEV_LOGS = false;
       }
-
       var inGroup = false;
       var methodToColorMap = {
         debug: "#7f8c8d",
@@ -179,64 +185,48 @@
         error: "#c0392b",
         groupCollapsed: "#3498db",
         groupEnd: null // No colored prefix on groupEnd
-
       };
-
       var print = function print(method, args) {
         var _console2;
-
         if (self.__WB_DISABLE_DEV_LOGS) {
           return;
         }
-
         if (method === 'groupCollapsed') {
           // Safari doesn't print all console.groupCollapsed() arguments:
           // https://bugs.webkit.org/show_bug.cgi?id=182754
           if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
             var _console;
-
             (_console = console)[method].apply(_console, args);
-
             return;
           }
         }
-
-        var styles = ["background: " + methodToColorMap[method], "border-radius: 0.5em", "color: white", "font-weight: bold", "padding: 2px 0.5em"]; // When in a group, the workbox prefix is not displayed.
-
+        var styles = ["background: " + methodToColorMap[method], "border-radius: 0.5em", "color: white", "font-weight: bold", "padding: 2px 0.5em"];
+        // When in a group, the workbox prefix is not displayed.
         var logPrefix = inGroup ? [] : ['%cworkbox', styles.join(';')];
-
         (_console2 = console)[method].apply(_console2, logPrefix.concat(args));
-
         if (method === 'groupCollapsed') {
           inGroup = true;
         }
-
         if (method === 'groupEnd') {
           inGroup = false;
         }
-      }; // eslint-disable-next-line @typescript-eslint/ban-types
-
-
+      };
+      // eslint-disable-next-line @typescript-eslint/ban-types
       var api = {};
       var loggerMethods = Object.keys(methodToColorMap);
-
       var _loop = function _loop() {
         var key = _loggerMethods[_i];
         var method = key;
-
         api[method] = function () {
           for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
             args[_key] = arguments[_key];
           }
-
           print(method, args);
         };
       };
-
       for (var _i = 0, _loggerMethods = loggerMethods; _i < _loggerMethods.length; _i++) {
         _loop();
       }
-
       return api;
     }();
 
@@ -247,7 +237,6 @@
       license that can be found in the LICENSE file or at
       https://opensource.org/licenses/MIT.
     */
-
     /**
      * A minimal `EventTarget` shim.
      * This is necessary because not all browsers support constructable
@@ -263,36 +252,26 @@
        * @param {Function} listener
        * @private
        */
-
-
       var _proto = WorkboxEventTarget.prototype;
-
       _proto.addEventListener = function addEventListener(type, listener) {
         var foo = this._getEventListenersByType(type);
-
         foo.add(listener);
       }
       /**
        * @param {string} type
        * @param {Function} listener
        * @private
-       */
-      ;
-
+       */;
       _proto.removeEventListener = function removeEventListener(type, listener) {
         this._getEventListenersByType(type).delete(listener);
       }
       /**
        * @param {Object} event
        * @private
-       */
-      ;
-
+       */;
       _proto.dispatchEvent = function dispatchEvent(event) {
         event.target = this;
-
         var listeners = this._getEventListenersByType(event.type);
-
         for (var _iterator = _createForOfIteratorHelperLoose(listeners), _step; !(_step = _iterator()).done;) {
           var listener = _step.value;
           listener(event);
@@ -305,17 +284,13 @@
        * @param {string} type The event type.
        * @return {Set<ListenerCallback>} An array of handler functions.
        * @private
-       */
-      ;
-
+       */;
       _proto._getEventListenersByType = function _getEventListenersByType(type) {
         if (!this._eventListenerRegistry.has(type)) {
           this._eventListenerRegistry.set(type, new Set());
         }
-
         return this._eventListenerRegistry.get(type);
       };
-
       return WorkboxEventTarget;
     }();
 
@@ -335,10 +310,9 @@
      * @param {string} url2
      * @return {boolean}
      */
-
     function urlsMatch(url1, url2) {
       var _location = location,
-          href = _location.href;
+        href = _location.href;
       return new URL(url1, href).href === new URL(url2, href).href;
     }
 
@@ -355,12 +329,12 @@
      * constructable `EventTarget`, and using a real `Event` will error.
      * @private
      */
-
     var WorkboxEvent = function WorkboxEvent(type, props) {
       this.type = type;
       Object.assign(this, props);
     };
 
+    // The time a SW must be in the waiting phase before we can conclude
     // `skipWaiting()` wasn't called. This 200 amount wasn't scientifically
     // chosen, but it seems to avoid false positives in my testing.
 
@@ -368,15 +342,13 @@
       if (direct) {
         return then ? then(value) : value;
       }
-
       if (!value || !value.then) {
         value = Promise.resolve(value);
       }
-
       return then ? value.then(then) : value;
     }
-
-    var WAITING_TIMEOUT_DURATION = 200; // The amount of time after a registration that we can reasonably conclude
+    var WAITING_TIMEOUT_DURATION = 200;
+    // The amount of time after a registration that we can reasonably conclude
     // that the registration didn't trigger an update.
 
     function _async(f) {
@@ -384,7 +356,6 @@
         for (var args = [], i = 0; i < arguments.length; i++) {
           args[i] = arguments[i];
         }
-
         try {
           return Promise.resolve(f.apply(this, args));
         } catch (e) {
@@ -392,12 +363,11 @@
         }
       };
     }
-
-    var REGISTRATION_TIMEOUT_DURATION = 60000; // The de facto standard message that a service worker should be listening for
+    var REGISTRATION_TIMEOUT_DURATION = 60000;
+    // The de facto standard message that a service worker should be listening for
     // to trigger a call to skipWaiting().
 
     function _empty() {}
-
     var SKIP_WAITING_MESSAGE = {
       type: 'SKIP_WAITING'
     };
@@ -419,10 +389,7 @@
         return value && value.then ? value.then(_empty) : Promise.resolve();
       }
     }
-
     var Workbox = /*#__PURE__*/function (_WorkboxEventTarget) {
-      _inheritsLoose(Workbox, _WorkboxEventTarget);
-
       /**
        * Creates a new Workbox instance with a script URL and service worker
        * options. The script URL and options are the same as those used when
@@ -437,15 +404,13 @@
       // eslint-disable-next-line @typescript-eslint/ban-types
       function Workbox(scriptURL, registerOptions) {
         var _this;
-
         if (registerOptions === void 0) {
           registerOptions = {};
         }
-
         _this = _WorkboxEventTarget.call(this) || this;
         _this._registerOptions = {};
-        _this._updateFoundCount = 0; // Deferreds we can resolve later.
-
+        _this._updateFoundCount = 0;
+        // Deferreds we can resolve later.
         _this._swDeferred = new Deferred();
         _this._activeDeferred = new Deferred();
         _this._controllingDeferred = new Deferred();
@@ -454,11 +419,11 @@
         /**
          * @private
          */
-
         _this._onUpdateFound = function () {
           // `this._registration` will never be `undefined` after an update is found.
           var registration = _this._registration;
-          var installingSW = registration.installing; // If the script URL passed to `navigator.serviceWorker.register()` is
+          var installingSW = registration.installing;
+          // If the script URL passed to `navigator.serviceWorker.register()` is
           // different from the current controlling SW's script URL, we know any
           // successful registration calls will trigger an `updatefound` event.
           // But if the registered script URL is the same as the current controlling
@@ -470,21 +435,23 @@
           // script it registered or from a registration attempt made by a newer
           // version of the page running in another tab.
           // To minimize the possibility of a false positive, we use the logic here:
-
-          var updateLikelyTriggeredExternally = // Since we enforce only calling `register()` once, and since we don't
+          var updateLikelyTriggeredExternally =
+          // Since we enforce only calling `register()` once, and since we don't
           // add the `updatefound` event listener until the `register()` call, if
           // `_updateFoundCount` is > 0 then it means this method has already
           // been called, thus this SW must be external
-          _this._updateFoundCount > 0 || // If the script URL of the installing SW is different from this
+          _this._updateFoundCount > 0 ||
+          // If the script URL of the installing SW is different from this
           // instance's script URL, we know it's definitely not from our
           // registration.
-          !urlsMatch(installingSW.scriptURL, _this._scriptURL.toString()) || // If all of the above are false, then we use a time-based heuristic:
+          !urlsMatch(installingSW.scriptURL, _this._scriptURL.toString()) ||
+          // If all of the above are false, then we use a time-based heuristic:
           // Any `updatefound` event that occurs long after our registration is
           // assumed to be external.
-          performance.now() > _this._registrationTime + REGISTRATION_TIMEOUT_DURATION ? // If any of the above are not true, we assume the update was
+          performance.now() > _this._registrationTime + REGISTRATION_TIMEOUT_DURATION ?
+          // If any of the above are not true, we assume the update was
           // triggered by this instance.
           true : false;
-
           if (updateLikelyTriggeredExternally) {
             _this._externalSW = installingSW;
             registration.removeEventListener('updatefound', _this._onUpdateFound);
@@ -492,13 +459,10 @@
             // If the update was not triggered externally we know the installing
             // SW is the one we registered, so we set it.
             _this._sw = installingSW;
-
             _this._ownSWs.add(installingSW);
-
-            _this._swDeferred.resolve(installingSW); // The `installing` state isn't something we have a dedicated
+            _this._swDeferred.resolve(installingSW);
+            // The `installing` state isn't something we have a dedicated
             // callback for, but we do log messages for it in development.
-
-
             {
               if (navigator.serviceWorker.controller) {
                 logger.log('Updated service worker found. Installing now...');
@@ -506,21 +470,18 @@
                 logger.log('Service worker is installing...');
               }
             }
-          } // Increment the `updatefound` count, so future invocations of this
+          }
+          // Increment the `updatefound` count, so future invocations of this
           // method can be sure they were triggered externally.
-
-
-          ++_this._updateFoundCount; // Add a `statechange` listener regardless of whether this update was
+          ++_this._updateFoundCount;
+          // Add a `statechange` listener regardless of whether this update was
           // triggered externally, since we have callbacks for both.
-
           installingSW.addEventListener('statechange', _this._onStateChange);
         };
         /**
          * @private
          * @param {Event} originalEvent
          */
-
-
         _this._onStateChange = function (originalEvent) {
           // `this._registration` will never be `undefined` after an update is found.
           var registration = _this._registration;
@@ -532,13 +493,10 @@
             isExternal: isExternal,
             originalEvent: originalEvent
           };
-
           if (!isExternal && _this._isUpdate) {
             eventProps.isUpdate = true;
           }
-
           _this.dispatchEvent(new WorkboxEvent(state, eventProps));
-
           if (state === 'installed') {
             // This timeout is used to ignore cases where the service worker calls
             // `skipWaiting()` in the install event, thus moving it directly in the
@@ -552,7 +510,6 @@
               // Ensure the SW is still waiting (it may now be redundant).
               if (state === 'installed' && registration.waiting === sw) {
                 _this.dispatchEvent(new WorkboxEvent('waiting', eventProps));
-
                 {
                   if (isExternal) {
                     logger.warn('An external service worker has installed but is ' + 'waiting for this client to close before activating...');
@@ -564,12 +521,10 @@
             }, WAITING_TIMEOUT_DURATION);
           } else if (state === 'activating') {
             clearTimeout(_this._waitingTimeout);
-
             if (!isExternal) {
               _this._activeDeferred.resolve(sw);
             }
           }
-
           {
             switch (state) {
               case 'installed':
@@ -578,29 +533,23 @@
                 } else {
                   logger.log('Registered service worker installed.');
                 }
-
                 break;
-
               case 'activated':
                 if (isExternal) {
                   logger.warn('An external service worker has activated.');
                 } else {
                   logger.log('Registered service worker activated.');
-
                   if (sw !== navigator.serviceWorker.controller) {
                     logger.warn('The registered service worker is active but ' + 'not yet controlling the page. Reload or run ' + '`clients.claim()` in the service worker.');
                   }
                 }
-
                 break;
-
               case 'redundant':
                 if (sw === _this._compatibleControllingSW) {
                   logger.log('Previously controlling service worker now redundant!');
                 } else if (!isExternal) {
                   logger.log('Registered service worker now redundant!');
                 }
-
                 break;
             }
           }
@@ -609,27 +558,23 @@
          * @private
          * @param {Event} originalEvent
          */
-
-
         _this._onControllerChange = function (originalEvent) {
           var sw = _this._sw;
-          var isExternal = sw !== navigator.serviceWorker.controller; // Unconditionally dispatch the controlling event, with isExternal set
+          var isExternal = sw !== navigator.serviceWorker.controller;
+          // Unconditionally dispatch the controlling event, with isExternal set
           // to distinguish between controller changes due to the initial registration
           // vs. an update-check or other tab's registration.
           // See https://github.com/GoogleChrome/workbox/issues/2786
-
           _this.dispatchEvent(new WorkboxEvent('controlling', {
             isExternal: isExternal,
             originalEvent: originalEvent,
             sw: sw,
             isUpdate: _this._isUpdate
           }));
-
           if (!isExternal) {
             {
               logger.log('Registered service worker now controlling this page.');
             }
-
             _this._controllingDeferred.resolve(sw);
           }
         };
@@ -637,16 +582,14 @@
          * @private
          * @param {Event} originalEvent
          */
-
-
         _this._onMessage = _async(function (originalEvent) {
           // Can't change type 'any' of data.
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           var data = originalEvent.data,
-              ports = originalEvent.ports,
-              source = originalEvent.source; // Wait until there's an "own" service worker. This is used to buffer
+            ports = originalEvent.ports,
+            source = originalEvent.source;
+          // Wait until there's an "own" service worker. This is used to buffer
           // `message` events that may be received prior to calling `register()`.
-
           return _await(_this.getSW(), function () {
             if (_this._ownSWs.has(source)) {
               _this.dispatchEvent(new WorkboxEvent('message', {
@@ -666,10 +609,10 @@
           // update to be found.
         });
         _this._scriptURL = scriptURL;
-        _this._registerOptions = registerOptions; // Add a message listener immediately since messages received during
+        _this._registerOptions = registerOptions;
+        // Add a message listener immediately since messages received during
         // page load are buffered only until the DOMContentLoaded event:
         // https://github.com/GoogleChrome/workbox/issues/2202
-
         navigator.serviceWorker.addEventListener('message', _this._onMessage);
         return _this;
       }
@@ -683,26 +626,21 @@
        *     register the service worker immediately, even if the window has
        *     not loaded (not recommended).
        */
-
-
+      _inheritsLoose(Workbox, _WorkboxEventTarget);
       var _proto = Workbox.prototype;
-
       _proto.register = function register(_temp) {
         var _ref = _temp === void 0 ? {} : _temp,
-            _ref$immediate = _ref.immediate,
-            immediate = _ref$immediate === void 0 ? false : _ref$immediate;
-
+          _ref$immediate = _ref.immediate,
+          immediate = _ref$immediate === void 0 ? false : _ref$immediate;
         try {
-          var _this3 = this;
-
+          var _this2 = this;
           if ("dev" !== 'production') {
-            if (_this3._registrationTime) {
+            if (_this2._registrationTime) {
               logger.error('Cannot re-register a Workbox instance after it has ' + 'been registered. Create a new instance instead.');
-              return;
+              return _await();
             }
           }
-
-          return _invoke(function () {
+          return _await(_invoke(function () {
             if (!immediate && document.readyState !== 'complete') {
               return _awaitIgnored(new Promise(function (res) {
                 return window.addEventListener('load', res);
@@ -711,88 +649,73 @@
           }, function () {
             // Set this flag to true if any service worker was controlling the page
             // at registration time.
-            _this3._isUpdate = Boolean(navigator.serviceWorker.controller); // Before registering, attempt to determine if a SW is already controlling
+            _this2._isUpdate = Boolean(navigator.serviceWorker.controller);
+            // Before registering, attempt to determine if a SW is already controlling
             // the page, and if that SW script (and version, if specified) matches this
             // instance's script.
-
-            _this3._compatibleControllingSW = _this3._getControllingSWIfCompatible();
-            return _await(_this3._registerScript(), function (_this2$_registerScrip) {
-              _this3._registration = _this2$_registerScrip;
-
+            _this2._compatibleControllingSW = _this2._getControllingSWIfCompatible();
+            return _await(_this2._registerScript(), function (_this2$_registerScrip) {
+              _this2._registration = _this2$_registerScrip;
               // If we have a compatible controller, store the controller as the "own"
               // SW, resolve active/controlling deferreds and add necessary listeners.
-              if (_this3._compatibleControllingSW) {
-                _this3._sw = _this3._compatibleControllingSW;
-
-                _this3._activeDeferred.resolve(_this3._compatibleControllingSW);
-
-                _this3._controllingDeferred.resolve(_this3._compatibleControllingSW);
-
-                _this3._compatibleControllingSW.addEventListener('statechange', _this3._onStateChange, {
+              if (_this2._compatibleControllingSW) {
+                _this2._sw = _this2._compatibleControllingSW;
+                _this2._activeDeferred.resolve(_this2._compatibleControllingSW);
+                _this2._controllingDeferred.resolve(_this2._compatibleControllingSW);
+                _this2._compatibleControllingSW.addEventListener('statechange', _this2._onStateChange, {
                   once: true
                 });
-              } // If there's a waiting service worker with a matching URL before the
+              }
+              // If there's a waiting service worker with a matching URL before the
               // `updatefound` event fires, it likely means that this site is open
               // in another tab, or the user refreshed the page (and thus the previous
               // page wasn't fully unloaded before this page started loading).
               // https://developers.google.com/web/fundamentals/primers/service-workers/lifecycle#waiting
-
-
-              var waitingSW = _this3._registration.waiting;
-
-              if (waitingSW && urlsMatch(waitingSW.scriptURL, _this3._scriptURL.toString())) {
+              var waitingSW = _this2._registration.waiting;
+              if (waitingSW && urlsMatch(waitingSW.scriptURL, _this2._scriptURL.toString())) {
                 // Store the waiting SW as the "own" Sw, even if it means overwriting
                 // a compatible controller.
-                _this3._sw = waitingSW; // Run this in the next microtask, so any code that adds an event
+                _this2._sw = waitingSW;
+                // Run this in the next microtask, so any code that adds an event
                 // listener after awaiting `register()` will get this event.
-
                 dontWaitFor(Promise.resolve().then(function () {
-                  _this3.dispatchEvent(new WorkboxEvent('waiting', {
+                  _this2.dispatchEvent(new WorkboxEvent('waiting', {
                     sw: waitingSW,
                     wasWaitingBeforeRegister: true
                   }));
-
                   if ("dev" !== 'production') {
                     logger.warn('A service worker was already waiting to activate ' + 'before this script was registered...');
                   }
                 }));
-              } // If an "own" SW is already set, resolve the deferred.
-
-
-              if (_this3._sw) {
-                _this3._swDeferred.resolve(_this3._sw);
-
-                _this3._ownSWs.add(_this3._sw);
               }
-
+              // If an "own" SW is already set, resolve the deferred.
+              if (_this2._sw) {
+                _this2._swDeferred.resolve(_this2._sw);
+                _this2._ownSWs.add(_this2._sw);
+              }
               if ("dev" !== 'production') {
-                logger.log('Successfully registered service worker.', _this3._scriptURL.toString());
-
+                logger.log('Successfully registered service worker.', _this2._scriptURL.toString());
                 if (navigator.serviceWorker.controller) {
-                  if (_this3._compatibleControllingSW) {
+                  if (_this2._compatibleControllingSW) {
                     logger.debug('A service worker with the same script URL ' + 'is already controlling this page.');
                   } else {
                     logger.debug('A service worker with a different script URL is ' + 'currently controlling the page. The browser is now fetching ' + 'the new script now...');
                   }
                 }
-
                 var currentPageIsOutOfScope = function currentPageIsOutOfScope() {
-                  var scopeURL = new URL(_this3._registerOptions.scope || _this3._scriptURL.toString(), document.baseURI);
+                  var scopeURL = new URL(_this2._registerOptions.scope || _this2._scriptURL.toString(), document.baseURI);
                   var scopeURLBasePath = new URL('./', scopeURL.href).pathname;
                   return !location.pathname.startsWith(scopeURLBasePath);
                 };
-
                 if (currentPageIsOutOfScope()) {
                   logger.warn('The current page is not in scope for the registered ' + 'service worker. Was this a mistake?');
                 }
               }
-
-              _this3._registration.addEventListener('updatefound', _this3._onUpdateFound);
-
-              navigator.serviceWorker.addEventListener('controllerchange', _this3._onControllerChange);
-              return _this3._registration;
+              _this2._registration.addEventListener('updatefound', _this2._onUpdateFound);
+              navigator.serviceWorker.addEventListener('controllerchange', _this2._onControllerChange);
+              return _this2._registration;
             });
-          });
+          }));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -801,21 +724,17 @@
        * Checks for updates of the registered service worker.
        */
       ;
-
       _proto.update = function update() {
         try {
-          var _this5 = this;
-
-          if (!_this5._registration) {
+          var _this3 = this;
+          if (!_this3._registration) {
             if ("dev" !== 'production') {
               logger.error('Cannot update a Workbox instance without ' + 'being registered. Register the Workbox instance first.');
             }
-
-            return;
-          } // Try to update registration
-
-
-          return _awaitIgnored(_this5._registration.update());
+            return _await();
+          }
+          // Try to update registration
+          return _await(_awaitIgnored(_this3._registration.update()));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -830,7 +749,6 @@
        * @return {Promise<ServiceWorker>}
        */
       ;
-
       /**
        * Resolves with a reference to a service worker that matches the script URL
        * of this instance, as soon as it's available.
@@ -867,12 +785,10 @@
       // We might be able to change the 'data' type to Record<string, unknown> in the future.
       // eslint-disable-next-line @typescript-eslint/ban-types
       ;
-
       _proto.messageSW = function messageSW$1(data) {
         try {
-          var _this7 = this;
-
-          return _await(_this7.getSW(), function (sw) {
+          var _this4 = this;
+          return _await(_this4.getSW(), function (sw) {
             return messageSW(sw, data);
           });
         } catch (e) {
@@ -887,7 +803,6 @@
        * calling this will have no effect.
        */
       ;
-
       _proto.messageSkipWaiting = function messageSkipWaiting() {
         if (this._registration && this._registration.waiting) {
           void messageSW(this._registration.waiting, SKIP_WAITING_MESSAGE);
@@ -899,12 +814,9 @@
        *
        * @private
        * @return {ServiceWorker|undefined}
-       */
-      ;
-
+       */;
       _proto._getControllingSWIfCompatible = function _getControllingSWIfCompatible() {
         var controller = navigator.serviceWorker.controller;
-
         if (controller && urlsMatch(controller.scriptURL, this._scriptURL.toString())) {
           return controller;
         } else {
@@ -916,38 +828,33 @@
        * options and tracks the time registration was complete.
        *
        * @private
-       */
-      ;
-
+       */;
       _proto._registerScript = function _registerScript() {
         try {
-          var _this9 = this;
-
-          return _catch(function () {
+          var _this5 = this;
+          return _await(_catch(function () {
             // this._scriptURL may be a TrustedScriptURL, but there's no support for
             // passing that to register() in lib.dom right now.
             // https://github.com/GoogleChrome/workbox/issues/2855
-            return _await(navigator.serviceWorker.register(_this9._scriptURL, _this9._registerOptions), function (reg) {
+            return _await(navigator.serviceWorker.register(_this5._scriptURL, _this5._registerOptions), function (reg) {
               // Keep track of when registration happened, so it can be used in the
               // `this._onUpdateFound` heuristic. Also use the presence of this
               // property as a way to see if `.register()` has been called.
-              _this9._registrationTime = performance.now();
+              _this5._registrationTime = performance.now();
               return reg;
             });
           }, function (error) {
             if ("dev" !== 'production') {
               logger.error(error);
-            } // Re-throw the error.
-
-
+            }
+            // Re-throw the error.
             throw error;
-          });
+          }));
         } catch (e) {
           return Promise.reject(e);
         }
       };
-
-      _createClass(Workbox, [{
+      return _createClass(Workbox, [{
         key: "active",
         get: function get() {
           return this._activeDeferred.promise;
@@ -964,28 +871,21 @@
          *
          * @return {Promise<ServiceWorker>}
          */
-
       }, {
         key: "controlling",
         get: function get() {
           return this._controllingDeferred.promise;
         }
       }]);
-
-      return Workbox;
     }(WorkboxEventTarget);
-
     function _invoke(body, then) {
       var result = body();
-
       if (result && result.then) {
         return result.then(then);
       }
-
       return then(result);
     } // The jsdoc comments below outline the events this instance may dispatch:
     // -----------------------------------------------------------------------
-
     /**
      * The `message` event is dispatched any time a `postMessage` is received.
      *
@@ -998,7 +898,6 @@
      * @property {MessagePort[]} ports The `ports` value from `originalEvent`.
      * @property {Workbox} target The `Workbox` instance.
      */
-
     /**
      * The `installed` event is dispatched if the state of a
      * {@link workbox-window.Workbox} instance's
@@ -1021,7 +920,6 @@
      * @property {string} type `installed`.
      * @property {Workbox} target The `Workbox` instance.
      */
-
     /**
      * The `waiting` event is dispatched if the state of a
      * {@link workbox-window.Workbox} instance's
@@ -1049,7 +947,6 @@
      * @property {string} type `waiting`.
      * @property {Workbox} target The `Workbox` instance.
      */
-
     /**
      * The `controlling` event is dispatched if a
      * [`controllerchange`]{@link https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/oncontrollerchange}
@@ -1071,7 +968,6 @@
      * @property {string} type `controlling`.
      * @property {Workbox} target The `Workbox` instance.
      */
-
     /**
      * The `activated` event is dispatched if the state of a
      * {@link workbox-window.Workbox} instance's
@@ -1090,7 +986,6 @@
      * @property {string} type `activated`.
      * @property {Workbox} target The `Workbox` instance.
      */
-
     /**
      * The `redundant` event is dispatched if the state of a
      * {@link workbox-window.Workbox} instance's
@@ -1107,19 +1002,15 @@
      * @property {string} type `redundant`.
      * @property {Workbox} target The `Workbox` instance.
      */
-
-
     function _catch(body, recover) {
       try {
         var result = body();
       } catch (e) {
         return recover(e);
       }
-
       if (result && result.then) {
         return result.then(void 0, recover);
       }
-
       return result;
     }
 
@@ -1129,5 +1020,5 @@
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));
 

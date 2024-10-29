@@ -2,8 +2,9 @@ this.workbox = this.workbox || {};
 this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js, getFriendlyURL_js, logger_js) {
     'use strict';
 
+    // @ts-ignore
     try {
-      self['workbox:cacheable-response:7.0.0'] && _();
+      self['workbox:cacheable-response:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -21,7 +22,6 @@ this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js,
      *
      * @memberof workbox-cacheable-response
      */
-
     class CacheableResponse {
       /**
        * To construct a new CacheableResponse instance you must provide at least
@@ -46,7 +46,6 @@ this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js,
               funcName: 'constructor'
             });
           }
-
           if (config.statuses) {
             assert_js.assert.isArray(config.statuses, {
               moduleName: 'workbox-cacheable-response',
@@ -55,7 +54,6 @@ this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js,
               paramName: 'config.statuses'
             });
           }
-
           if (config.headers) {
             assert_js.assert.isType(config.headers, 'object', {
               moduleName: 'workbox-cacheable-response',
@@ -65,7 +63,6 @@ this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js,
             });
           }
         }
-
         this._statuses = config.statuses;
         this._headers = config.headers;
       }
@@ -78,8 +75,6 @@ this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js,
        * @return {boolean} `true` if the `Response` is cacheable, and `false`
        * otherwise.
        */
-
-
       isResponseCacheable(response) {
         {
           assert_js.assert.isInstance(response, Response, {
@@ -89,19 +84,15 @@ this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js,
             paramName: 'response'
           });
         }
-
         let cacheable = true;
-
         if (this._statuses) {
           cacheable = this._statuses.includes(response.status);
         }
-
         if (this._headers && cacheable) {
           cacheable = Object.keys(this._headers).some(headerName => {
             return response.headers.get(headerName) === this._headers[headerName];
           });
         }
-
         {
           if (!cacheable) {
             logger_js.logger.groupCollapsed(`The request for ` + `'${getFriendlyURL_js.getFriendlyURL(response.url)}' returned a response that does ` + `not meet the criteria for being cached.`);
@@ -124,10 +115,8 @@ this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js,
             logger_js.logger.groupEnd();
           }
         }
-
         return cacheable;
       }
-
     }
 
     /*
@@ -144,7 +133,6 @@ this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js,
      *
      * @memberof workbox-cacheable-response
      */
-
     class CacheableResponsePlugin {
       /**
        * To construct a new CacheableResponsePlugin instance you must provide at
@@ -173,13 +161,10 @@ this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js,
           if (this._cacheableResponse.isResponseCacheable(response)) {
             return response;
           }
-
           return null;
         };
-
         this._cacheableResponse = new CacheableResponse(config);
       }
-
     }
 
     exports.CacheableResponse = CacheableResponse;
@@ -187,5 +172,5 @@ this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js,
 
     return exports;
 
-}({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private));
+})({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private);
 

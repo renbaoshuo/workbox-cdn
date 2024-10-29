@@ -2,8 +2,9 @@ this.workbox = this.workbox || {};
 this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js, getFriendlyURL_js) {
     'use strict';
 
+    // @ts-ignore
     try {
-      self['workbox:routing:7.0.0'] && _();
+      self['workbox:routing:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -21,7 +22,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
      *
      * @private
      */
-
     const defaultMethod = 'GET';
     /**
      * The list of valid HTTP methods associated with requests that could be routed.
@@ -30,7 +30,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
      *
      * @private
      */
-
     const validMethods = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT'];
 
     /*
@@ -47,7 +46,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
      *
      * @private
      */
-
     const normalizeHandler = handler => {
       if (handler && typeof handler === 'object') {
         {
@@ -58,7 +56,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
             paramName: 'handler'
           });
         }
-
         return handler;
       } else {
         {
@@ -69,7 +66,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
             paramName: 'handler'
           });
         }
-
         return {
           handle: handler
         };
@@ -92,7 +88,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
      *
      * @memberof workbox-routing
      */
-
     class Route {
       /**
        * Constructor for Route class.
@@ -113,16 +108,14 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
             funcName: 'constructor',
             paramName: 'match'
           });
-
           if (method) {
             assert_js.assert.isOneOf(method, validMethods, {
               paramName: 'method'
             });
           }
-        } // These values are referenced directly by Router so cannot be
+        }
+        // These values are referenced directly by Router so cannot be
         // altered by minificaton.
-
-
         this.handler = normalizeHandler(handler);
         this.match = match;
         this.method = method;
@@ -132,12 +125,9 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
        * @param {workbox-routing-handlerCallback} handler A callback
        * function that returns a Promise resolving to a Response
        */
-
-
       setCatchHandler(handler) {
         this.catchHandler = normalizeHandler(handler);
       }
-
     }
 
     /*
@@ -162,7 +152,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
      * @memberof workbox-routing
      * @extends workbox-routing.Route
      */
-
     class NavigationRoute extends Route {
       /**
        * If both `denylist` and `allowlist` are provided, the `denylist` will
@@ -206,7 +195,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
             paramName: 'options.denylist'
           });
         }
-
         super(options => this._match(options), handler);
         this._allowlist = allowlist;
         this._denylist = denylist;
@@ -221,8 +209,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
        *
        * @private
        */
-
-
       _match({
         url,
         request
@@ -230,34 +216,26 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
         if (request && request.mode !== 'navigate') {
           return false;
         }
-
         const pathnameAndSearch = url.pathname + url.search;
-
         for (const regExp of this._denylist) {
           if (regExp.test(pathnameAndSearch)) {
             {
               logger_js.logger.log(`The navigation route ${pathnameAndSearch} is not ` + `being used, since the URL matches this denylist pattern: ` + `${regExp.toString()}`);
             }
-
             return false;
           }
         }
-
         if (this._allowlist.some(regExp => regExp.test(pathnameAndSearch))) {
           {
             logger_js.logger.debug(`The navigation route ${pathnameAndSearch} ` + `is being used.`);
           }
-
           return true;
         }
-
         {
           logger_js.logger.log(`The navigation route ${pathnameAndSearch} is not ` + `being used, since the URL being navigated to doesn't ` + `match the allowlist.`);
         }
-
         return false;
       }
-
     }
 
     /*
@@ -278,7 +256,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
      * @memberof workbox-routing
      * @extends workbox-routing.Route
      */
-
     class RegExpRoute extends Route {
       /**
        * If the regular expression contains
@@ -302,38 +279,32 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
             paramName: 'pattern'
           });
         }
-
         const match = ({
           url
         }) => {
-          const result = regExp.exec(url.href); // Return immediately if there's no match.
-
+          const result = regExp.exec(url.href);
+          // Return immediately if there's no match.
           if (!result) {
             return;
-          } // Require that the match start at the first character in the URL string
+          }
+          // Require that the match start at the first character in the URL string
           // if it's a cross-origin request.
           // See https://github.com/GoogleChrome/workbox/issues/281 for the context
           // behind this behavior.
-
-
           if (url.origin !== location.origin && result.index !== 0) {
             {
               logger_js.logger.debug(`The regular expression '${regExp.toString()}' only partially matched ` + `against the cross-origin URL '${url.toString()}'. RegExpRoute's will only ` + `handle cross-origin requests if they match the entire URL.`);
             }
-
             return;
-          } // If the route matches, but there aren't any capture groups defined, then
+          }
+          // If the route matches, but there aren't any capture groups defined, then
           // this will return [], which is truthy and therefore sufficient to
           // indicate a match.
           // If there are capture groups, then it will return their values.
-
-
           return result.slice(1);
         };
-
         super(match, handler, method);
       }
-
     }
 
     /*
@@ -360,7 +331,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
      *
      * @memberof workbox-routing
      */
-
     class Router {
       /**
        * Initializes a new Router.
@@ -374,8 +344,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
        * method name ('GET', etc.) to an array of all the corresponding `Route`
        * instances that are registered.
        */
-
-
       get routes() {
         return this._routes;
       }
@@ -383,8 +351,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
        * Adds a fetch event listener to respond to events when a route matches
        * the event's request.
        */
-
-
       addFetchListener() {
         // See https://github.com/Microsoft/TypeScript/issues/28357#issuecomment-436484705
         self.addEventListener('fetch', event => {
@@ -395,7 +361,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
             request,
             event
           });
-
           if (responsePromise) {
             event.respondWith(responsePromise);
           }
@@ -423,8 +388,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
        * }
        * ```
        */
-
-
       addCacheListener() {
         // See https://github.com/Microsoft/TypeScript/issues/28357#issuecomment-436484705
         self.addEventListener('message', event => {
@@ -435,27 +398,24 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
             const {
               payload
             } = event.data;
-
             {
               logger_js.logger.debug(`Caching URLs from the window`, payload.urlsToCache);
             }
-
             const requestPromises = Promise.all(payload.urlsToCache.map(entry => {
               if (typeof entry === 'string') {
                 entry = [entry];
               }
-
               const request = new Request(...entry);
               return this.handleRequest({
                 request,
                 event
-              }); // TODO(philipwalton): TypeScript errors without this typecast for
+              });
+              // TODO(philipwalton): TypeScript errors without this typecast for
               // some reason (probably a bug). The real type here should work but
               // doesn't: `Array<Promise<Response> | undefined>`.
             })); // TypeScript
-
-            event.waitUntil(requestPromises); // If a MessageChannel was used, reply to the message on success.
-
+            event.waitUntil(requestPromises);
+            // If a MessageChannel was used, reply to the message on success.
             if (event.ports && event.ports[0]) {
               void requestPromises.then(() => event.ports[0].postMessage(true));
             }
@@ -474,8 +434,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
        *     registered route can handle the request. If there is no matching
        *     route and there's no `defaultHandler`, `undefined` is returned.
        */
-
-
       handleRequest({
         request,
         event
@@ -488,17 +446,13 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
             paramName: 'options.request'
           });
         }
-
         const url = new URL(request.url, location.href);
-
         if (!url.protocol.startsWith('http')) {
           {
             logger_js.logger.debug(`Workbox Router only supports URLs that start with 'http'.`);
           }
-
           return;
         }
-
         const sameOrigin = url.origin === location.origin;
         const {
           params,
@@ -511,39 +465,31 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
         });
         let handler = route && route.handler;
         const debugMessages = [];
-
         {
           if (handler) {
             debugMessages.push([`Found a route to handle this request:`, route]);
-
             if (params) {
               debugMessages.push([`Passing the following params to the route's handler:`, params]);
             }
           }
-        } // If we don't have a handler because there was no matching route, then
+        }
+        // If we don't have a handler because there was no matching route, then
         // fall back to defaultHandler if that's defined.
-
-
         const method = request.method;
-
         if (!handler && this._defaultHandlerMap.has(method)) {
           {
             debugMessages.push(`Failed to find a matching route. Falling ` + `back to the default handler for ${method}.`);
           }
-
           handler = this._defaultHandlerMap.get(method);
         }
-
         if (!handler) {
           {
             // No handler so Workbox will do nothing. If logs is set of debug
             // i.e. verbose, we should print out this information.
             logger_js.logger.debug(`No route found for: ${getFriendlyURL_js.getFriendlyURL(url)}`);
           }
-
           return;
         }
-
         {
           // We have a handler, meaning Workbox is going to handle the route.
           // print the routing details to the console.
@@ -556,12 +502,10 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
             }
           });
           logger_js.logger.groupEnd();
-        } // Wrap in try and catch in case the handle method throws a synchronous
+        }
+        // Wrap in try and catch in case the handle method throws a synchronous
         // error. It should still callback to the catch handler.
-
-
         let responsePromise;
-
         try {
           responsePromise = handler.handle({
             url,
@@ -571,11 +515,9 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
           });
         } catch (err) {
           responsePromise = Promise.reject(err);
-        } // Get route's catch handler, if it exists
-
-
+        }
+        // Get route's catch handler, if it exists
         const catchHandler = route && route.catchHandler;
-
         if (responsePromise instanceof Promise && (this._catchHandler || catchHandler)) {
           responsePromise = responsePromise.catch(async err => {
             // If there's a route catch handler, process that first
@@ -588,7 +530,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
                 logger_js.logger.error(err);
                 logger_js.logger.groupEnd();
               }
-
               try {
                 return await catchHandler.handle({
                   url,
@@ -602,7 +543,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
                 }
               }
             }
-
             if (this._catchHandler) {
               {
                 // Still include URL here as it will be async from the console group
@@ -612,18 +552,15 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
                 logger_js.logger.error(err);
                 logger_js.logger.groupEnd();
               }
-
               return this._catchHandler.handle({
                 url,
                 request,
                 event
               });
             }
-
             throw err;
           });
         }
-
         return responsePromise;
       }
       /**
@@ -641,8 +578,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
        *     They are populated if a matching route was found or `undefined`
        *     otherwise.
        */
-
-
       findMatchingRoute({
         url,
         sameOrigin,
@@ -650,18 +585,16 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
         event
       }) {
         const routes = this._routes.get(request.method) || [];
-
         for (const route of routes) {
-          let params; // route.match returns type any, not possible to change right now.
+          let params;
+          // route.match returns type any, not possible to change right now.
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-
           const matchResult = route.match({
             url,
             sameOrigin,
             request,
             event
           });
-
           if (matchResult) {
             {
               // Warn developers that using an async matchCallback is almost always
@@ -669,16 +602,15 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
               if (matchResult instanceof Promise) {
                 logger_js.logger.warn(`While routing ${getFriendlyURL_js.getFriendlyURL(url)}, an async ` + `matchCallback function was used. Please convert the ` + `following route to use a synchronous matchCallback function:`, route);
               }
-            } // See https://github.com/GoogleChrome/workbox/issues/2079
+            }
+            // See https://github.com/GoogleChrome/workbox/issues/2079
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-
-
             params = matchResult;
-
             if (Array.isArray(params) && params.length === 0) {
               // Instead of passing an empty array in as params, use undefined.
               params = undefined;
-            } else if (matchResult.constructor === Object && // eslint-disable-line
+            } else if (matchResult.constructor === Object &&
+            // eslint-disable-line
             Object.keys(matchResult).length === 0) {
               // Instead of passing an empty object in as params, use undefined.
               params = undefined;
@@ -687,17 +619,15 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
               // don't set params.
               // See https://github.com/GoogleChrome/workbox/pull/2134#issuecomment-513924353
               params = undefined;
-            } // Return early if have a match.
-
-
+            }
+            // Return early if have a match.
             return {
               route,
               params
             };
           }
-        } // If no match was found above, return and empty object.
-
-
+        }
+        // If no match was found above, return and empty object.
         return {};
       }
       /**
@@ -714,8 +644,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
        * @param {string} [method='GET'] The HTTP method to associate with this
        * default handler. Each method has its own default.
        */
-
-
       setDefaultHandler(handler, method = defaultMethod) {
         this._defaultHandlerMap.set(method, normalizeHandler(handler));
       }
@@ -726,8 +654,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
        * @param {workbox-routing~handlerCallback} handler A callback
        * function that returns a Promise resulting in a Response.
        */
-
-
       setCatchHandler(handler) {
         this._catchHandler = normalizeHandler(handler);
       }
@@ -736,8 +662,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
        *
        * @param {workbox-routing.Route} route The route to register.
        */
-
-
       registerRoute(route) {
         {
           assert_js.assert.isType(route, 'object', {
@@ -771,13 +695,11 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
             paramName: 'route.method'
           });
         }
-
         if (!this._routes.has(route.method)) {
           this._routes.set(route.method, []);
-        } // Give precedence to all of the earlier routes by adding this additional
+        }
+        // Give precedence to all of the earlier routes by adding this additional
         // route to the end of the array.
-
-
         this._routes.get(route.method).push(route);
       }
       /**
@@ -785,24 +707,19 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
        *
        * @param {workbox-routing.Route} route The route to unregister.
        */
-
-
       unregisterRoute(route) {
         if (!this._routes.has(route.method)) {
           throw new WorkboxError_js.WorkboxError('unregister-route-but-not-found-with-method', {
             method: route.method
           });
         }
-
         const routeIndex = this._routes.get(route.method).indexOf(route);
-
         if (routeIndex > -1) {
           this._routes.get(route.method).splice(routeIndex, 1);
         } else {
           throw new WorkboxError_js.WorkboxError('unregister-route-route-not-registered');
         }
       }
-
     }
 
     /*
@@ -820,15 +737,13 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
      * @private
      * @return {Router}
      */
-
     const getOrCreateDefaultRouter = () => {
       if (!defaultRouter) {
-        defaultRouter = new Router(); // The helpers that use the default Router assume these listeners exist.
-
+        defaultRouter = new Router();
+        // The helpers that use the default Router assume these listeners exist.
         defaultRouter.addFetchListener();
         defaultRouter.addCacheListener();
       }
-
       return defaultRouter;
     };
 
@@ -857,13 +772,10 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
      *
      * @memberof workbox-routing
      */
-
     function registerRoute(capture, handler, method) {
       let route;
-
       if (typeof capture === 'string') {
         const captureUrl = new URL(capture, location.href);
-
         {
           if (!(capture.startsWith('/') || capture.startsWith('http'))) {
             throw new WorkboxError_js.WorkboxError('invalid-string', {
@@ -871,19 +783,16 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
               funcName: 'registerRoute',
               paramName: 'capture'
             });
-          } // We want to check if Express-style wildcards are in the pathname only.
+          }
+          // We want to check if Express-style wildcards are in the pathname only.
           // TODO: Remove this log message in v4.
-
-
-          const valueToCheck = capture.startsWith('http') ? captureUrl.pathname : capture; // See https://github.com/pillarjs/path-to-regexp#parameters
-
+          const valueToCheck = capture.startsWith('http') ? captureUrl.pathname : capture;
+          // See https://github.com/pillarjs/path-to-regexp#parameters
           const wildcards = '[*:?+]';
-
           if (new RegExp(`${wildcards}`).exec(valueToCheck)) {
             logger_js.logger.debug(`The '$capture' parameter contains an Express-style wildcard ` + `character (${wildcards}). Strings are now always interpreted as ` + `exact matches; use a RegExp for partial or wildcard matches.`);
           }
         }
-
         const matchCallback = ({
           url
         }) => {
@@ -892,11 +801,9 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
               logger_js.logger.debug(`${capture} only partially matches the cross-origin URL ` + `${url.toString()}. This route will only handle cross-origin requests ` + `if they match the entire URL.`);
             }
           }
-
           return url.href === captureUrl.href;
-        }; // If `capture` is a string then `handler` and `method` must be present.
-
-
+        };
+        // If `capture` is a string then `handler` and `method` must be present.
         route = new Route(matchCallback, handler, method);
       } else if (capture instanceof RegExp) {
         // If `capture` is a `RegExp` then `handler` and `method` must be present.
@@ -913,7 +820,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
           paramName: 'capture'
         });
       }
-
       const defaultRouter = getOrCreateDefaultRouter();
       defaultRouter.registerRoute(route);
       return route;
@@ -935,7 +841,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
      *
      * @memberof workbox-routing
      */
-
     function setCatchHandler(handler) {
       const defaultRouter = getOrCreateDefaultRouter();
       defaultRouter.setCatchHandler(handler);
@@ -960,7 +865,6 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
      *
      * @memberof workbox-routing
      */
-
     function setDefaultHandler(handler) {
       const defaultRouter = getOrCreateDefaultRouter();
       defaultRouter.setDefaultHandler(handler);
@@ -976,5 +880,5 @@ this.workbox.routing = (function (exports, assert_js, logger_js, WorkboxError_js
 
     return exports;
 
-}({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private));
+})({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private);
 

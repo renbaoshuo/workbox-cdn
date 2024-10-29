@@ -2,8 +2,9 @@ this.workbox = this.workbox || {};
 this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_js, WorkboxError_js, waitUntil_js, copyResponse_js, getFriendlyURL_js, Strategy_js, registerRoute_js, Route_js) {
     'use strict';
 
+    // @ts-ignore
     try {
-      self['workbox:precaching:7.0.0'] && _();
+      self['workbox:precaching:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -13,7 +14,7 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
       license that can be found in the LICENSE file or at
       https://opensource.org/licenses/MIT.
     */
-
+    // Name of the search parameter used to store revision info.
     const REVISION_SEARCH_PARAM = '__WB_REVISION__';
     /**
      * Converts a manifest entry into a versioned URL suitable for precaching.
@@ -24,16 +25,14 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      * @private
      * @memberof workbox-precaching
      */
-
     function createCacheKey(entry) {
       if (!entry) {
         throw new WorkboxError_js.WorkboxError('add-to-cache-list-unexpected-type', {
           entry
         });
-      } // If a precache manifest entry is a string, it's assumed to be a versioned
+      }
+      // If a precache manifest entry is a string, it's assumed to be a versioned
       // URL, like '/app.abcd1234.js'. Return as-is.
-
-
       if (typeof entry === 'string') {
         const urlObject = new URL(entry, location.href);
         return {
@@ -41,30 +40,26 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
           url: urlObject.href
         };
       }
-
       const {
         revision,
         url
       } = entry;
-
       if (!url) {
         throw new WorkboxError_js.WorkboxError('add-to-cache-list-unexpected-type', {
           entry
         });
-      } // If there's just a URL and no revision, then it's also assumed to be a
+      }
+      // If there's just a URL and no revision, then it's also assumed to be a
       // versioned URL.
-
-
       if (!revision) {
         const urlObject = new URL(url, location.href);
         return {
           cacheKey: urlObject.href,
           url: urlObject.href
         };
-      } // Otherwise, construct a properly versioned URL using the custom Workbox
+      }
+      // Otherwise, construct a properly versioned URL using the custom Workbox
       // search parameter along with the revision info.
-
-
       const cacheKeyURL = new URL(url, location.href);
       const originalURL = new URL(url, location.href);
       cacheKeyURL.searchParams.set(REVISION_SEARCH_PARAM, revision);
@@ -87,12 +82,10 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @private
      */
-
     class PrecacheInstallReportPlugin {
       constructor() {
         this.updatedURLs = [];
         this.notUpdatedURLs = [];
-
         this.handlerWillStart = async ({
           request,
           state
@@ -102,7 +95,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
             state.originalRequest = request;
           }
         };
-
         this.cachedResponseWillBeUsed = async ({
           event,
           state,
@@ -112,7 +104,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
             if (state && state.originalRequest && state.originalRequest instanceof Request) {
               // TODO: `state` should never be undefined...
               const url = state.originalRequest.url;
-
               if (cachedResponse) {
                 this.notUpdatedURLs.push(url);
               } else {
@@ -120,11 +111,9 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
               }
             }
           }
-
           return cachedResponse;
         };
       }
-
     }
 
     /*
@@ -140,7 +129,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @private
      */
-
     class PrecacheCacheKeyPlugin {
       constructor({
         precacheController
@@ -150,20 +138,15 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
           params
         }) => {
           // Params is type any, can't change right now.
-
           /* eslint-disable */
           const cacheKey = (params === null || params === void 0 ? void 0 : params.cacheKey) || this._precacheController.getCacheKeyForURL(request.url);
           /* eslint-enable */
-
-
           return cacheKey ? new Request(cacheKey, {
             headers: request.headers
           }) : request;
         };
-
         this._precacheController = precacheController;
       }
-
     }
 
     /*
@@ -179,14 +162,11 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @private
      */
-
     const logGroup = (groupTitle, deletedURLs) => {
       logger_js.logger.groupCollapsed(groupTitle);
-
       for (const url of deletedURLs) {
         logger_js.logger.log(url);
       }
-
       logger_js.logger.groupEnd();
     };
     /**
@@ -195,11 +175,8 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      * @private
      * @memberof workbox-precaching
      */
-
-
     function printCleanupDetails(deletedURLs) {
       const deletionCount = deletedURLs.length;
-
       if (deletionCount > 0) {
         logger_js.logger.groupCollapsed(`During precaching cleanup, ` + `${deletionCount} cached ` + `request${deletionCount === 1 ? ' was' : 's were'} deleted.`);
         logGroup('Deleted Cache Requests', deletedURLs);
@@ -220,18 +197,14 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @private
      */
-
     function _nestedGroup(groupTitle, urls) {
       if (urls.length === 0) {
         return;
       }
-
       logger_js.logger.groupCollapsed(groupTitle);
-
       for (const url of urls) {
         logger_js.logger.log(url);
       }
-
       logger_js.logger.groupEnd();
     }
     /**
@@ -241,25 +214,17 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      * @private
      * @memberof workbox-precaching
      */
-
-
     function printInstallDetails(urlsToPrecache, urlsAlreadyPrecached) {
       const precachedCount = urlsToPrecache.length;
       const alreadyPrecachedCount = urlsAlreadyPrecached.length;
-
       if (precachedCount || alreadyPrecachedCount) {
         let message = `Precaching ${precachedCount} file${precachedCount === 1 ? '' : 's'}.`;
-
         if (alreadyPrecachedCount > 0) {
           message += ` ${alreadyPrecachedCount} ` + `file${alreadyPrecachedCount === 1 ? ' is' : 's are'} already cached.`;
         }
-
         logger_js.logger.groupCollapsed(message);
-
         _nestedGroup(`View newly precached URLs.`, urlsToPrecache);
-
         _nestedGroup(`View previously precached URLs.`, urlsAlreadyPrecached);
-
         logger_js.logger.groupEnd();
       }
     }
@@ -283,7 +248,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      * @extends workbox-strategies.Strategy
      * @memberof workbox-precaching
      */
-
     class PrecacheStrategy extends Strategy_js.Strategy {
       /**
        *
@@ -305,11 +269,11 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
       constructor(options = {}) {
         options.cacheName = cacheNames_js.cacheNames.getPrecacheName(options.cacheName);
         super(options);
-        this._fallbackToNetwork = options.fallbackToNetwork === false ? false : true; // Redirected responses cannot be used to satisfy a navigation request, so
+        this._fallbackToNetwork = options.fallbackToNetwork === false ? false : true;
+        // Redirected responses cannot be used to satisfy a navigation request, so
         // any redirected response must be "copied" rather than cloned, so the new
         // response doesn't contain the `redirected` flag. See:
         // https://bugs.chromium.org/p/chromium/issues/detail?id=669363&desc=2#c1
-
         this.plugins.push(PrecacheStrategy.copyRedirectedCacheableResponsesPlugin);
       }
       /**
@@ -319,55 +283,46 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        *     triggered the request.
        * @return {Promise<Response>}
        */
-
-
       async _handle(request, handler) {
         const response = await handler.cacheMatch(request);
-
         if (response) {
           return response;
-        } // If this is an `install` event for an entry that isn't already cached,
+        }
+        // If this is an `install` event for an entry that isn't already cached,
         // then populate the cache.
-
-
         if (handler.event && handler.event.type === 'install') {
           return await this._handleInstall(request, handler);
-        } // Getting here means something went wrong. An entry that should have been
+        }
+        // Getting here means something went wrong. An entry that should have been
         // precached wasn't found in the cache.
-
-
         return await this._handleFetch(request, handler);
       }
-
       async _handleFetch(request, handler) {
         let response;
-        const params = handler.params || {}; // Fall back to the network if we're configured to do so.
-
+        const params = handler.params || {};
+        // Fall back to the network if we're configured to do so.
         if (this._fallbackToNetwork) {
           {
             logger_js.logger.warn(`The precached response for ` + `${getFriendlyURL_js.getFriendlyURL(request.url)} in ${this.cacheName} was not ` + `found. Falling back to the network.`);
           }
-
           const integrityInManifest = params.integrity;
           const integrityInRequest = request.integrity;
-          const noIntegrityConflict = !integrityInRequest || integrityInRequest === integrityInManifest; // Do not add integrity if the original request is no-cors
+          const noIntegrityConflict = !integrityInRequest || integrityInRequest === integrityInManifest;
+          // Do not add integrity if the original request is no-cors
           // See https://github.com/GoogleChrome/workbox/issues/3096
-
           response = await handler.fetch(new Request(request, {
             integrity: request.mode !== 'no-cors' ? integrityInRequest || integrityInManifest : undefined
-          })); // It's only "safe" to repair the cache if we're using SRI to guarantee
+          }));
+          // It's only "safe" to repair the cache if we're using SRI to guarantee
           // that the response matches the precache manifest's expectations,
           // and there's either a) no integrity property in the incoming request
           // or b) there is an integrity, and it matches the precache manifest.
           // See https://github.com/GoogleChrome/workbox/issues/2858
           // Also if the original request users no-cors we don't use integrity.
           // See https://github.com/GoogleChrome/workbox/issues/3096
-
           if (integrityInManifest && noIntegrityConflict && request.mode !== 'no-cors') {
             this._useDefaultCacheabilityPluginIfNeeded();
-
             const wasCached = await handler.cachePut(request, response.clone());
-
             {
               if (wasCached) {
                 logger_js.logger.log(`A response for ${getFriendlyURL_js.getFriendlyURL(request.url)} ` + `was used to "repair" the precache.`);
@@ -382,11 +337,10 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
             url: request.url
           });
         }
-
         {
-          const cacheKey = params.cacheKey || (await handler.getCacheKey(request, 'read')); // Workbox is going to handle the route.
+          const cacheKey = params.cacheKey || (await handler.getCacheKey(request, 'read'));
+          // Workbox is going to handle the route.
           // print the routing details to the console.
-
           logger_js.logger.groupCollapsed(`Precaching is responding to: ` + getFriendlyURL_js.getFriendlyURL(request.url));
           logger_js.logger.log(`Serving the precached url: ${getFriendlyURL_js.getFriendlyURL(cacheKey instanceof Request ? cacheKey.url : cacheKey)}`);
           logger_js.logger.groupCollapsed(`View request details here.`);
@@ -397,18 +351,14 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
           logger_js.logger.groupEnd();
           logger_js.logger.groupEnd();
         }
-
         return response;
       }
-
       async _handleInstall(request, handler) {
         this._useDefaultCacheabilityPluginIfNeeded();
-
-        const response = await handler.fetch(request); // Make sure we defer cachePut() until after we know the response
+        const response = await handler.fetch(request);
+        // Make sure we defer cachePut() until after we know the response
         // should be cached; see https://github.com/GoogleChrome/workbox/issues/2737
-
         const wasCached = await handler.cachePut(request, response.clone());
-
         if (!wasCached) {
           // Throwing here will lead to the `install` handler failing, which
           // we want to do if *any* of the responses aren't safe to cache.
@@ -417,7 +367,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
             status: response.status
           });
         }
-
         return response;
       }
       /**
@@ -447,39 +396,31 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        *
        * @private
        */
-
-
       _useDefaultCacheabilityPluginIfNeeded() {
         let defaultPluginIndex = null;
         let cacheWillUpdatePluginCount = 0;
-
         for (const [index, plugin] of this.plugins.entries()) {
           // Ignore the copy redirected plugin when determining what to do.
           if (plugin === PrecacheStrategy.copyRedirectedCacheableResponsesPlugin) {
             continue;
-          } // Save the default plugin's index, in case it needs to be removed.
-
-
+          }
+          // Save the default plugin's index, in case it needs to be removed.
           if (plugin === PrecacheStrategy.defaultPrecacheCacheabilityPlugin) {
             defaultPluginIndex = index;
           }
-
           if (plugin.cacheWillUpdate) {
             cacheWillUpdatePluginCount++;
           }
         }
-
         if (cacheWillUpdatePluginCount === 0) {
           this.plugins.push(PrecacheStrategy.defaultPrecacheCacheabilityPlugin);
         } else if (cacheWillUpdatePluginCount > 1 && defaultPluginIndex !== null) {
           // Only remove the default plugin; multiple custom plugins are allowed.
           this.plugins.splice(defaultPluginIndex, 1);
-        } // Nothing needs to be done if cacheWillUpdatePluginCount is 1
-
+        }
+        // Nothing needs to be done if cacheWillUpdatePluginCount is 1
       }
-
     }
-
     PrecacheStrategy.defaultPrecacheCacheabilityPlugin = {
       async cacheWillUpdate({
         response
@@ -487,10 +428,8 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
         if (!response || response.status >= 400) {
           return null;
         }
-
         return response;
       }
-
     };
     PrecacheStrategy.copyRedirectedCacheableResponsesPlugin = {
       async cacheWillUpdate({
@@ -498,7 +437,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
       }) {
         return response.redirected ? await copyResponse_js.copyResponse(response) : response;
       }
-
     };
 
     /*
@@ -513,7 +451,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @memberof workbox-precaching
      */
-
     class PrecacheController {
       /**
        * Create a new PrecacheController.
@@ -539,8 +476,8 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
             precacheController: this
           })],
           fallbackToNetwork
-        }); // Bind the install and activate methods to the instance.
-
+        });
+        // Bind the install and activate methods to the instance.
         this.install = this.install.bind(this);
         this.activate = this.activate.bind(this);
       }
@@ -548,8 +485,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        * @type {workbox-precaching.PrecacheStrategy} The strategy created by this controller and
        * used to cache assets and respond to fetch events.
        */
-
-
       get strategy() {
         return this._strategy;
       }
@@ -563,11 +498,8 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        *
        * @param {Array<Object|string>} [entries=[]] Array of entries to precache.
        */
-
-
       precache(entries) {
         this.addToCacheList(entries);
-
         if (!this._installAndActiveListenersAdded) {
           self.addEventListener('install', this.install);
           self.addEventListener('activate', this.activate);
@@ -581,8 +513,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        * @param {Array<workbox-precaching.PrecacheController.PrecacheEntry|string>} entries
        *     Array of entries to precache.
        */
-
-
       addToCacheList(entries) {
         {
           assert_js.assert.isArray(entries, {
@@ -592,9 +522,7 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
             paramName: 'entries'
           });
         }
-
         const urlsToWarnAbout = [];
-
         for (const entry of entries) {
           // See https://github.com/GoogleChrome/workbox/issues/2259
           if (typeof entry === 'string') {
@@ -602,37 +530,29 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
           } else if (entry && entry.revision === undefined) {
             urlsToWarnAbout.push(entry.url);
           }
-
           const {
             cacheKey,
             url
           } = createCacheKey(entry);
           const cacheMode = typeof entry !== 'string' && entry.revision ? 'reload' : 'default';
-
           if (this._urlsToCacheKeys.has(url) && this._urlsToCacheKeys.get(url) !== cacheKey) {
             throw new WorkboxError_js.WorkboxError('add-to-cache-list-conflicting-entries', {
               firstEntry: this._urlsToCacheKeys.get(url),
               secondEntry: cacheKey
             });
           }
-
           if (typeof entry !== 'string' && entry.integrity) {
             if (this._cacheKeysToIntegrities.has(cacheKey) && this._cacheKeysToIntegrities.get(cacheKey) !== entry.integrity) {
               throw new WorkboxError_js.WorkboxError('add-to-cache-list-conflicting-integrities', {
                 url
               });
             }
-
             this._cacheKeysToIntegrities.set(cacheKey, entry.integrity);
           }
-
           this._urlsToCacheKeys.set(url, cacheKey);
-
           this._urlsToCacheModes.set(url, cacheMode);
-
           if (urlsToWarnAbout.length > 0) {
             const warningMessage = `Workbox is precaching URLs without revision ` + `info: ${urlsToWarnAbout.join(', ')}\nThis is generally NOT safe. ` + `Learn more at https://bit.ly/wb-precache`;
-
             {
               logger_js.logger.warn(warningMessage);
             }
@@ -649,21 +569,17 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        * @param {ExtendableEvent} event
        * @return {Promise<workbox-precaching.InstallResult>}
        */
-
-
       install(event) {
         // waitUntil returns Promise<any>
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return waitUntil_js.waitUntil(event, async () => {
           const installReportPlugin = new PrecacheInstallReportPlugin();
-          this.strategy.plugins.push(installReportPlugin); // Cache entries one at a time.
+          this.strategy.plugins.push(installReportPlugin);
+          // Cache entries one at a time.
           // See https://github.com/GoogleChrome/workbox/issues/2528
-
           for (const [url, cacheKey] of this._urlsToCacheKeys) {
             const integrity = this._cacheKeysToIntegrities.get(cacheKey);
-
             const cacheMode = this._urlsToCacheModes.get(url);
-
             const request = new Request(url, {
               integrity,
               cache: cacheMode,
@@ -677,16 +593,13 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
               event
             }));
           }
-
           const {
             updatedURLs,
             notUpdatedURLs
           } = installReportPlugin;
-
           {
             printInstallDetails(updatedURLs, notUpdatedURLs);
           }
-
           return {
             updatedURLs,
             notUpdatedURLs
@@ -703,8 +616,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        * @param {ExtendableEvent} event
        * @return {Promise<workbox-precaching.CleanupResult>}
        */
-
-
       activate(event) {
         // waitUntil returns Promise<any>
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -713,18 +624,15 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
           const currentlyCachedRequests = await cache.keys();
           const expectedCacheKeys = new Set(this._urlsToCacheKeys.values());
           const deletedURLs = [];
-
           for (const request of currentlyCachedRequests) {
             if (!expectedCacheKeys.has(request.url)) {
               await cache.delete(request);
               deletedURLs.push(request.url);
             }
           }
-
           {
             printCleanupDetails(deletedURLs);
           }
-
           return {
             deletedURLs
           };
@@ -736,8 +644,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        *
        * @return {Map<string, string>} A URL to cache key mapping.
        */
-
-
       getURLsToCacheKeys() {
         return this._urlsToCacheKeys;
       }
@@ -747,8 +653,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        *
        * @return {Array<string>} The precached URLs.
        */
-
-
       getCachedURLs() {
         return [...this._urlsToCacheKeys.keys()];
       }
@@ -761,8 +665,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        * @return {string} The versioned URL that corresponds to a cache key
        * for the original URL, or undefined if that URL isn't precached.
        */
-
-
       getCacheKeyForURL(url) {
         const urlObject = new URL(url, location.href);
         return this._urlsToCacheKeys.get(urlObject.href);
@@ -772,8 +674,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        * @return {string} The subresource integrity associated with the cache key,
        * or undefined if it's not set.
        */
-
-
       getIntegrityForCacheKey(cacheKey) {
         return this._cacheKeysToIntegrities.get(cacheKey);
       }
@@ -795,17 +695,13 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        * to look up in the precache.
        * @return {Promise<Response|undefined>}
        */
-
-
       async matchPrecache(request) {
         const url = request instanceof Request ? request.url : request;
         const cacheKey = this.getCacheKeyForURL(url);
-
         if (cacheKey) {
           const cache = await self.caches.open(this.strategy.cacheName);
           return cache.match(cacheKey);
         }
-
         return undefined;
       }
       /**
@@ -816,17 +712,13 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
        * `Response`.
        * @return {workbox-routing~handlerCallback}
        */
-
-
       createHandlerBoundToURL(url) {
         const cacheKey = this.getCacheKeyForURL(url);
-
         if (!cacheKey) {
           throw new WorkboxError_js.WorkboxError('non-precached-url', {
             url
           });
         }
-
         return options => {
           options.request = new Request(url);
           options.params = Object.assign({
@@ -835,7 +727,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
           return this.strategy.handle(options);
         };
       }
-
     }
 
     /*
@@ -850,12 +741,10 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      * @return {PrecacheController}
      * @private
      */
-
     const getOrCreatePrecacheController = () => {
       if (!precacheController) {
         precacheController = new PrecacheController();
       }
-
       return precacheController;
     };
 
@@ -873,7 +762,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @memberof workbox-precaching
      */
-
     function addPlugins(plugins) {
       const precacheController = getOrCreatePrecacheController();
       precacheController.strategy.plugins.push(...plugins);
@@ -898,7 +786,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      * @private
      * @memberof workbox-precaching
      */
-
     function removeIgnoredSearchParams(urlObject, ignoreURLParametersMatching = []) {
       // Convert the iterable into an array at the start of the loop to make sure
       // deletion doesn't mess up iteration.
@@ -907,7 +794,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
           urlObject.searchParams.delete(paramName);
         }
       }
-
       return urlObject;
     }
 
@@ -928,7 +814,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      * @private
      * @memberof workbox-precaching
      */
-
     function* generateURLVariations(url, {
       ignoreURLParametersMatching = [/^utm_/, /^fbclid$/],
       directoryIndex = 'index.html',
@@ -940,24 +825,20 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
       yield urlObject.href;
       const urlWithoutIgnoredParams = removeIgnoredSearchParams(urlObject, ignoreURLParametersMatching);
       yield urlWithoutIgnoredParams.href;
-
       if (directoryIndex && urlWithoutIgnoredParams.pathname.endsWith('/')) {
         const directoryURL = new URL(urlWithoutIgnoredParams.href);
         directoryURL.pathname += directoryIndex;
         yield directoryURL.href;
       }
-
       if (cleanURLs) {
         const cleanURL = new URL(urlWithoutIgnoredParams.href);
         cleanURL.pathname += '.html';
         yield cleanURL.href;
       }
-
       if (urlManipulation) {
         const additionalURLs = urlManipulation({
           url: urlObject
         });
-
         for (const urlToAttempt of additionalURLs) {
           yield urlToAttempt.href;
         }
@@ -980,7 +861,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      * @memberof workbox-precaching
      * @extends workbox-routing.Route
      */
-
     class PrecacheRoute extends Route_js.Route {
       /**
        * @param {PrecacheController} precacheController A `PrecacheController`
@@ -1003,10 +883,8 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
           request
         }) => {
           const urlsToCacheKeys = precacheController.getURLsToCacheKeys();
-
           for (const possibleURL of generateURLVariations(request.url, options)) {
             const cacheKey = urlsToCacheKeys.get(possibleURL);
-
             if (cacheKey) {
               const integrity = precacheController.getIntegrityForCacheKey(cacheKey);
               return {
@@ -1015,17 +893,13 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
               };
             }
           }
-
           {
             logger_js.logger.debug(`Precaching did not find a match for ` + getFriendlyURL_js.getFriendlyURL(request.url));
           }
-
           return;
         };
-
         super(match, precacheController.strategy);
       }
-
     }
 
     /*
@@ -1049,7 +923,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @memberof workbox-precaching
      */
-
     function addRoute(options) {
       const precacheController = getOrCreatePrecacheController();
       const precacheRoute = new PrecacheRoute(precacheController, options);
@@ -1082,7 +955,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      * @private
      * @memberof workbox-precaching
      */
-
     const deleteOutdatedCaches = async (currentPrecacheName, substringToFind = SUBSTRING_TO_FIND) => {
       const cacheNames = await self.caches.keys();
       const cacheNamesToDelete = cacheNames.filter(cacheName => {
@@ -1105,7 +977,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @memberof workbox-precaching
      */
-
     function cleanupOutdatedCaches() {
       // See https://github.com/Microsoft/TypeScript/issues/28357#issuecomment-436484705
       self.addEventListener('activate', event => {
@@ -1144,7 +1015,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @memberof workbox-precaching
      */
-
     function createHandlerBoundToURL(url) {
       const precacheController = getOrCreatePrecacheController();
       return precacheController.createHandlerBoundToURL(url);
@@ -1176,7 +1046,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @memberof workbox-precaching
      */
-
     function getCacheKeyForURL(url) {
       const precacheController = getOrCreatePrecacheController();
       return precacheController.getCacheKeyForURL(url);
@@ -1204,7 +1073,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @memberof workbox-precaching
      */
-
     function matchPrecache(request) {
       const precacheController = getOrCreatePrecacheController();
       return precacheController.matchPrecache(request);
@@ -1236,7 +1104,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @memberof workbox-precaching
      */
-
     function precache(entries) {
       const precacheController = getOrCreatePrecacheController();
       precacheController.precache(entries);
@@ -1263,7 +1130,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @memberof workbox-precaching
      */
-
     function precacheAndRoute(entries, options) {
       precache(entries);
       addRoute(options);
@@ -1290,7 +1156,6 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
      *
      * @memberof workbox-precaching
      */
-
     class PrecacheFallbackPlugin {
       /**
        * Constructs a new PrecacheFallbackPlugin with the associated fallbackURL.
@@ -1312,11 +1177,9 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
          * @private
          */
         this.handlerDidError = () => this._precacheController.matchPrecache(this._fallbackURL);
-
         this._fallbackURL = fallbackURL;
         this._precacheController = precacheController || getOrCreatePrecacheController();
       }
-
     }
 
     exports.PrecacheController = PrecacheController;
@@ -1334,5 +1197,5 @@ this.workbox.precaching = (function (exports, assert_js, cacheNames_js, logger_j
 
     return exports;
 
-}({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core, workbox.core._private, workbox.strategies, workbox.routing, workbox.routing));
+})({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core, workbox.core._private, workbox.strategies, workbox.routing, workbox.routing);
 

@@ -2,8 +2,9 @@ this.workbox = this.workbox || {};
 this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, WorkboxError_js, canConstructReadableStream_js) {
     'use strict';
 
+    // @ts-ignore
     try {
-      self['workbox:streams:7.0.0'] && _();
+      self['workbox:streams:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -22,23 +23,19 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
      * @return {ReadableStreamReader}
      * @private
      */
-
     function _getReaderFromSource(source) {
       if (source instanceof Response) {
         // See https://github.com/GoogleChrome/workbox/issues/2998
         if (source.body) {
           return source.body.getReader();
         }
-
         throw new WorkboxError_js.WorkboxError('opaque-streams-source', {
           type: source.type
         });
       }
-
       if (source instanceof ReadableStream) {
         return source.getReader();
       }
-
       return new Response(source).body.getReader();
     }
     /**
@@ -54,8 +51,6 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
      *
      * @memberof workbox-streams
      */
-
-
     function concatenate(sourcePromises) {
       {
         assert_js.assert.isArray(sourcePromises, {
@@ -64,7 +59,6 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
           paramName: 'sourcePromises'
         });
       }
-
       const readerPromises = sourcePromises.map(sourcePromise => {
         return Promise.resolve(sourcePromise).then(source => {
           return _getReaderFromSource(source);
@@ -86,14 +80,11 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
               {
                 logMessages.push(['Reached the end of source:', sourcePromises[i]]);
               }
-
               i++;
-
               if (i >= readerPromises.length) {
                 // Log all the messages in the group at once in a single group.
                 {
                   logger_js.logger.groupCollapsed(`Concatenating ${readerPromises.length} sources.`);
-
                   for (const message of logMessages) {
                     if (Array.isArray(message)) {
                       logger_js.logger.log(...message);
@@ -101,17 +92,14 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
                       logger_js.logger.log(message);
                     }
                   }
-
                   logger_js.logger.log('Finished reading all sources.');
                   logger_js.logger.groupEnd();
                 }
-
                 controller.close();
                 streamDeferred.resolve();
                 return;
-              } // The `pull` method is defined because we're inside it.
-
-
+              }
+              // The `pull` method is defined because we're inside it.
               return this.pull(controller);
             } else {
               controller.enqueue(result === null || result === void 0 ? void 0 : result.value);
@@ -120,20 +108,16 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
             {
               logger_js.logger.error('An error occurred:', error);
             }
-
             streamDeferred.reject(error);
             throw error;
           });
         },
-
         cancel() {
           {
             logger_js.logger.warn('The ReadableStream was cancelled.');
           }
-
           streamDeferred.resolve();
         }
-
       });
       return {
         done: streamDeferred.promise,
@@ -162,15 +146,12 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
      *
      * @memberof workbox-streams
      */
-
     function createHeaders(headersInit = {}) {
       // See https://github.com/GoogleChrome/workbox/issues/1461
       const headers = new Headers(headersInit);
-
       if (!headers.has('content-type')) {
         headers.set('content-type', 'text/html');
       }
-
       return headers;
     }
 
@@ -198,7 +179,6 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
      *
      * @memberof workbox-streams
      */
-
     function concatenateToResponse(sourcePromises, headersInit) {
       const {
         done,
@@ -232,7 +212,6 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
      *
      * @memberof workbox-streams
      */
-
     function isSupported() {
       return canConstructReadableStream_js.canConstructReadableStream();
     }
@@ -260,7 +239,6 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
      * @return {workbox-routing~handlerCallback}
      * @memberof workbox-streams
      */
-
     function strategy(sourceFunctions, headersInit) {
       return async ({
         event,
@@ -277,29 +255,23 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
             params
           }));
         });
-
         if (isSupported()) {
           const {
             done,
             response
           } = concatenateToResponse(sourcePromises, headersInit);
-
           if (event) {
             event.waitUntil(done);
           }
-
           return response;
         }
-
         {
           logger_js.logger.log(`The current browser doesn't support creating response ` + `streams. Falling back to non-streaming response instead.`);
-        } // Fallback to waiting for everything to finish, and concatenating the
+        }
+        // Fallback to waiting for everything to finish, and concatenating the
         // responses.
-
-
         const blobPartsPromises = sourcePromises.map(async sourcePromise => {
           const source = await sourcePromise;
-
           if (source instanceof Response) {
             return source.blob();
           } else {
@@ -311,9 +283,9 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
           }
         });
         const blobParts = await Promise.all(blobPartsPromises);
-        const headers = createHeaders(headersInit); // Constructing a new Response from a Blob source is well-supported.
+        const headers = createHeaders(headersInit);
+        // Constructing a new Response from a Blob source is well-supported.
         // So is constructing a new Blob from multiple source Blobs or strings.
-
         return new Response(new Blob(blobParts), {
           headers
         });
@@ -327,5 +299,5 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
 
     return exports;
 
-}({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private));
+})({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private);
 

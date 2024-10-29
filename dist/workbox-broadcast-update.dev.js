@@ -2,8 +2,9 @@ this.workbox = this.workbox || {};
 this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, resultingClientExists_js, logger_js, WorkboxError_js, dontWaitFor_js) {
     'use strict';
 
+    // @ts-ignore
     try {
-      self['workbox:broadcast-update:7.0.0'] && _();
+      self['workbox:broadcast-update:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -24,29 +25,24 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
      *
      * @memberof workbox-broadcast-update
      */
-
     const responsesAreSame = (firstResponse, secondResponse, headersToCheck) => {
       {
         if (!(firstResponse instanceof Response && secondResponse instanceof Response)) {
           throw new WorkboxError_js.WorkboxError('invalid-responses-are-same-args');
         }
       }
-
       const atLeastOneHeaderAvailable = headersToCheck.some(header => {
         return firstResponse.headers.has(header) && secondResponse.headers.has(header);
       });
-
       if (!atLeastOneHeaderAvailable) {
         {
           logger_js.logger.warn(`Unable to determine where the response has been updated ` + `because none of the headers that would be checked are present.`);
           logger_js.logger.debug(`Attempting to compare the following: `, firstResponse, secondResponse, headersToCheck);
-        } // Just return true, indicating the that responses are the same, since we
+        }
+        // Just return true, indicating the that responses are the same, since we
         // can't determine otherwise.
-
-
         return true;
       }
-
       return headersToCheck.every(header => {
         const headerStateComparison = firstResponse.headers.has(header) === secondResponse.headers.has(header);
         const headerValueComparison = firstResponse.headers.get(header) === secondResponse.headers.get(header);
@@ -73,9 +69,9 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
       license that can be found in the LICENSE file or at
       https://opensource.org/licenses/MIT.
     */
+    // UA-sniff Safari: https://stackoverflow.com/questions/7944460/detect-safari-browser
     // TODO(philipwalton): remove once this Safari bug fix has been released.
     // https://bugs.webkit.org/show_bug.cgi?id=201169
-
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     /**
      * Generates the default payload used in update messages. By default the
@@ -84,7 +80,6 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
      * @return Object
      * @private
      */
-
     function defaultPayloadGenerator(data) {
       return {
         cacheName: data.cacheName,
@@ -100,8 +95,6 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
      *
      * @memberof workbox-broadcast-update
      */
-
-
     class BroadcastCacheUpdate {
       /**
        * Construct a BroadcastCacheUpdate instance with a specific `channelName` to
@@ -158,8 +151,6 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
        *     this possible cache update.
        * @return {Promise} Resolves once the update is sent.
        */
-
-
       async notifyIfUpdated(options) {
         {
           assert_js.assert.isType(options.cacheName, 'string', {
@@ -180,38 +171,33 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
             funcName: 'notifyIfUpdated',
             paramName: 'request'
           });
-        } // Without two responses there is nothing to compare.
-
-
+        }
+        // Without two responses there is nothing to compare.
         if (!options.oldResponse) {
           return;
         }
-
         if (!responsesAreSame(options.oldResponse, options.newResponse, this._headersToCheck)) {
           {
             logger_js.logger.log(`Newer response found (and cached) for:`, options.request.url);
           }
-
           const messageData = {
             type: CACHE_UPDATED_MESSAGE_TYPE,
             meta: CACHE_UPDATED_MESSAGE_META,
             payload: this._generatePayload(options)
-          }; // For navigation requests, wait until the new window client exists
+          };
+          // For navigation requests, wait until the new window client exists
           // before sending the message
-
           if (options.request.mode === 'navigate') {
             let resultingClientId;
-
             if (options.event instanceof FetchEvent) {
               resultingClientId = options.event.resultingClientId;
             }
-
-            const resultingWin = await resultingClientExists_js.resultingClientExists(resultingClientId); // Safari does not currently implement postMessage buffering and
+            const resultingWin = await resultingClientExists_js.resultingClientExists(resultingClientId);
+            // Safari does not currently implement postMessage buffering and
             // there's no good way to feature detect that, so to increase the
             // chances of the message being delivered in Safari, we add a timeout.
             // We also do this if `resultingClientExists()` didn't return a client,
             // which means it timed out, so it's worth waiting a bit longer.
-
             if (!resultingWin || isSafari) {
               // 3500 is chosen because (according to CrUX data) 80% of mobile
               // websites hit the DOMContentLoaded event in less than 3.5 seconds.
@@ -220,12 +206,10 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
               await timeout_js.timeout(3500);
             }
           }
-
           if (this._notifyAllClients) {
             const windows = await self.clients.matchAll({
               type: 'window'
             });
-
             for (const win of windows) {
               win.postMessage(messageData);
             }
@@ -238,7 +222,6 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
           }
         }
       }
-
     }
 
     /*
@@ -254,7 +237,6 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
      *
      * @memberof workbox-broadcast-update
      */
-
     class BroadcastUpdatePlugin {
       /**
        * Construct a {@link workbox-broadcast-update.BroadcastUpdate} instance with
@@ -286,10 +268,8 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
         this.cacheDidUpdate = async options => {
           dontWaitFor_js.dontWaitFor(this._broadcastUpdate.notifyIfUpdated(options));
         };
-
         this._broadcastUpdate = new BroadcastCacheUpdate(options);
       }
-
     }
 
     exports.BroadcastCacheUpdate = BroadcastCacheUpdate;
@@ -298,5 +278,5 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
 
     return exports;
 
-}({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private));
+})({}, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private, workbox.core._private);
 

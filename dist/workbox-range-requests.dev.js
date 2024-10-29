@@ -2,8 +2,9 @@ this.workbox = this.workbox || {};
 this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, logger_js) {
     'use strict';
 
+    // @ts-ignore
     try {
-      self['workbox:range-requests:7.0.0'] && _();
+      self['workbox:range-requests:7.2.0'] && _();
     } catch (e) {}
 
     /*
@@ -23,7 +24,6 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
      *
      * @private
      */
-
     function calculateEffectiveBoundaries(blob, start, end) {
       {
         assert_js.assert.isInstance(blob, Blob, {
@@ -32,9 +32,7 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
           paramName: 'blob'
         });
       }
-
       const blobSize = blob.size;
-
       if (end && end > blobSize || start && start < 0) {
         throw new WorkboxError_js.WorkboxError('range-not-satisfiable', {
           size: blobSize,
@@ -42,13 +40,11 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
           start
         });
       }
-
       let effectiveStart;
       let effectiveEnd;
-
       if (start !== undefined && end !== undefined) {
-        effectiveStart = start; // Range values are inclusive, so add 1 to the value.
-
+        effectiveStart = start;
+        // Range values are inclusive, so add 1 to the value.
         effectiveEnd = end + 1;
       } else if (start !== undefined && end === undefined) {
         effectiveStart = start;
@@ -57,7 +53,6 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
         effectiveStart = blobSize - end;
         effectiveEnd = blobSize;
       }
-
       return {
         start: effectiveStart,
         end: effectiveEnd
@@ -79,7 +74,6 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
      *
      * @private
      */
-
     function parseRangeHeader(rangeHeader) {
       {
         assert_js.assert.isType(rangeHeader, 'string', {
@@ -88,32 +82,27 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
           paramName: 'rangeHeader'
         });
       }
-
       const normalizedRangeHeader = rangeHeader.trim().toLowerCase();
-
       if (!normalizedRangeHeader.startsWith('bytes=')) {
         throw new WorkboxError_js.WorkboxError('unit-must-be-bytes', {
           normalizedRangeHeader
         });
-      } // Specifying multiple ranges separate by commas is valid syntax, but this
+      }
+      // Specifying multiple ranges separate by commas is valid syntax, but this
       // library only attempts to handle a single, contiguous sequence of bytes.
       // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range#Syntax
-
-
       if (normalizedRangeHeader.includes(',')) {
         throw new WorkboxError_js.WorkboxError('single-range-only', {
           normalizedRangeHeader
         });
       }
-
-      const rangeParts = /(\d*)-(\d*)/.exec(normalizedRangeHeader); // We need either at least one of the start or end values.
-
+      const rangeParts = /(\d*)-(\d*)/.exec(normalizedRangeHeader);
+      // We need either at least one of the start or end values.
       if (!rangeParts || !(rangeParts[1] || rangeParts[2])) {
         throw new WorkboxError_js.WorkboxError('invalid-range-values', {
           normalizedRangeHeader
         });
       }
-
       return {
         start: rangeParts[1] === '' ? undefined : Number(rangeParts[1]),
         end: rangeParts[2] === '' ? undefined : Number(rangeParts[2])
@@ -145,7 +134,6 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
      *
      * @memberof workbox-range-requests
      */
-
     async function createPartialResponse(request, originalResponse) {
       try {
         if ("dev" !== 'production') {
@@ -160,19 +148,15 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
             paramName: 'originalResponse'
           });
         }
-
         if (originalResponse.status === 206) {
           // If we already have a 206, then just pass it through as-is;
           // see https://github.com/GoogleChrome/workbox/issues/1720
           return originalResponse;
         }
-
         const rangeHeader = request.headers.get('range');
-
         if (!rangeHeader) {
           throw new WorkboxError_js.WorkboxError('no-range-header');
         }
-
         const boundaries = parseRangeHeader(rangeHeader);
         const originalBlob = await originalResponse.blob();
         const effectiveBoundaries = calculateEffectiveBoundaries(originalBlob, boundaries.start, boundaries.end);
@@ -197,7 +181,6 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
           logger_js.logger.log(originalResponse);
           logger_js.logger.groupEnd();
         }
-
         return new Response('', {
           status: 416,
           statusText: 'Range Not Satisfiable'
@@ -221,7 +204,6 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
      *
      * @memberof workbox-range-requests
      */
-
     class RangeRequestsPlugin {
       constructor() {
         /**
@@ -243,14 +225,12 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
           // and there's a Range: header in the request.
           if (cachedResponse && request.headers.has('range')) {
             return await createPartialResponse(request, cachedResponse);
-          } // If there was no Range: header, or if cachedResponse wasn't valid, just
+          }
+          // If there was no Range: header, or if cachedResponse wasn't valid, just
           // pass it through as-is.
-
-
           return cachedResponse;
         };
       }
-
     }
 
     exports.RangeRequestsPlugin = RangeRequestsPlugin;
@@ -258,5 +238,5 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
 
     return exports;
 
-}({}, workbox.core._private, workbox.core._private, workbox.core._private));
+})({}, workbox.core._private, workbox.core._private, workbox.core._private);
 
