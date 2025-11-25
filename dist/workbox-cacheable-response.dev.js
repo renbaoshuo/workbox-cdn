@@ -4,7 +4,7 @@ this.workbox.cacheableResponse = (function (exports, assert_js, WorkboxError_js,
 
     // @ts-ignore
     try {
-      self['workbox:cacheable-response:7.2.0'] && _();
+      self['workbox:cacheable-response:7.3.0'] && _();
     } catch (e) {}
 
     /*

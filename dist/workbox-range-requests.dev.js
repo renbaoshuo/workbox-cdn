@@ -4,7 +4,7 @@ this.workbox.rangeRequests = (function (exports, WorkboxError_js, assert_js, log
 
     // @ts-ignore
     try {
-      self['workbox:range-requests:7.2.0'] && _();
+      self['workbox:range-requests:7.3.0'] && _();
     } catch (e) {}
 
     /*

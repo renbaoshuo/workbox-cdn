@@ -3,18 +3,13 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
   'use strict';
 
   function _extends() {
-    _extends = Object.assign ? Object.assign.bind() : function (target) {
-      for (var i = 1; i < arguments.length; i++) {
-        var source = arguments[i];
-        for (var key in source) {
-          if (Object.prototype.hasOwnProperty.call(source, key)) {
-            target[key] = source[key];
-          }
-        }
+    return _extends = Object.assign ? Object.assign.bind() : function (n) {
+      for (var e = 1; e < arguments.length; e++) {
+        var t = arguments[e];
+        for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]);
       }
-      return target;
-    };
-    return _extends.apply(this, arguments);
+      return n;
+    }, _extends.apply(null, arguments);
   }
 
   const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
@@ -240,7 +235,7 @@ this.workbox.backgroundSync = (function (exports, WorkboxError_js, logger_js, as
 
   // @ts-ignore
   try {
-    self['workbox:background-sync:7.2.0'] && _();
+    self['workbox:background-sync:7.3.0'] && _();
   } catch (e) {}
 
   /*

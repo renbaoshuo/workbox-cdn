@@ -4,7 +4,7 @@ this.workbox.broadcastUpdate = (function (exports, assert_js, timeout_js, result
 
     // @ts-ignore
     try {
-      self['workbox:broadcast-update:7.2.0'] && _();
+      self['workbox:broadcast-update:7.3.0'] && _();
     } catch (e) {}
 
     /*

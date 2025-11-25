@@ -4,7 +4,7 @@ this.workbox.strategies = (function (exports, assert_js, logger_js, WorkboxError
 
     // @ts-ignore
     try {
-      self['workbox:strategies:7.2.0'] && _();
+      self['workbox:strategies:7.3.0'] && _();
     } catch (e) {}
 
     /*
@@ -18,7 +18,7 @@ this.workbox.strategies = (function (exports, assert_js, logger_js, WorkboxError
       return typeof input === 'string' ? new Request(input) : input;
     }
     /**
-     * A class created every time a Strategy instance instance calls
+     * A class created every time a Strategy instance calls
      * {@link workbox-strategies.Strategy~handle} or
      * {@link workbox-strategies.Strategy~handleAll} that wraps all fetch and
      * cache actions around plugin callbacks and keeps track of when the strategy
@@ -422,7 +422,7 @@ this.workbox.strategies = (function (exports, assert_js, logger_js, WorkboxError
       /**
        * Adds a promise to the
        * [extend lifetime promises]{@link https://w3c.github.io/ServiceWorker/#extendableevent-extend-lifetime-promises}
-       * of the event event associated with the request being handled (usually a
+       * of the event associated with the request being handled (usually a
        * `FetchEvent`).
        *
        * Note: you can await
@@ -443,13 +443,17 @@ this.workbox.strategies = (function (exports, assert_js, logger_js, WorkboxError
        *
        * Note: any work done after `doneWaiting()` settles should be manually
        * passed to an event's `waitUntil()` method (not this handler's
-       * `waitUntil()` method), otherwise the service worker thread my be killed
+       * `waitUntil()` method), otherwise the service worker thread may be killed
        * prior to your work completing.
        */
       async doneWaiting() {
-        let promise;
-        while (promise = this._extendLifetimePromises.shift()) {
-          await promise;
+        while (this._extendLifetimePromises.length) {
+          const promises = this._extendLifetimePromises.splice(0);
+          const result = await Promise.allSettled(promises);
+          const firstRejection = result.find(i => i.status === 'rejected');
+          if (firstRejection) {
+            throw firstRejection.reason;
+          }
         }
       }
       /**

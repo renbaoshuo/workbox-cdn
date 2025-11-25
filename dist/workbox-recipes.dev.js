@@ -4,7 +4,7 @@ this.workbox.recipes = (function (exports, registerRoute_js, StaleWhileRevalidat
 
     // @ts-ignore
     try {
-      self['workbox:recipes:7.2.0'] && _();
+      self['workbox:recipes:7.3.0'] && _();
     } catch (e) {}
 
     /*

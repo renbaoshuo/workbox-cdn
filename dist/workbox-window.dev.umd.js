@@ -6,7 +6,7 @@
 
     // @ts-ignore
     try {
-      self['workbox:window:7.2.0'] && _();
+      self['workbox:window:7.3.0'] && _();
     } catch (e) {}
 
     /*
@@ -42,6 +42,47 @@
       });
     }
 
+    function _arrayLikeToArray(r, a) {
+      (null == a || a > r.length) && (a = r.length);
+      for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+      return n;
+    }
+    function _defineProperties(e, r) {
+      for (var t = 0; t < r.length; t++) {
+        var o = r[t];
+        o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+      }
+    }
+    function _createClass(e, r, t) {
+      return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", {
+        writable: !1
+      }), e;
+    }
+    function _createForOfIteratorHelperLoose(r, e) {
+      var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+      if (t) return (t = t.call(r)).next.bind(t);
+      if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) {
+        t && (r = t);
+        var o = 0;
+        return function () {
+          return o >= r.length ? {
+            done: !0
+          } : {
+            done: !1,
+            value: r[o++]
+          };
+        };
+      }
+      throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+    }
+    function _inheritsLoose(t, o) {
+      t.prototype = Object.create(o.prototype), t.prototype.constructor = t, _setPrototypeOf(t, o);
+    }
+    function _setPrototypeOf(t, e) {
+      return _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function (t, e) {
+        return t.__proto__ = e, t;
+      }, _setPrototypeOf(t, e);
+    }
     function _toPrimitive(t, r) {
       if ("object" != typeof t || !t) return t;
       var e = t[Symbol.toPrimitive];
@@ -56,70 +97,17 @@
       var i = _toPrimitive(t, "string");
       return "symbol" == typeof i ? i : i + "";
     }
-    function _defineProperties(target, props) {
-      for (var i = 0; i < props.length; i++) {
-        var descriptor = props[i];
-        descriptor.enumerable = descriptor.enumerable || false;
-        descriptor.configurable = true;
-        if ("value" in descriptor) descriptor.writable = true;
-        Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor);
+    function _unsupportedIterableToArray(r, a) {
+      if (r) {
+        if ("string" == typeof r) return _arrayLikeToArray(r, a);
+        var t = {}.toString.call(r).slice(8, -1);
+        return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
       }
-    }
-    function _createClass(Constructor, protoProps, staticProps) {
-      if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-      if (staticProps) _defineProperties(Constructor, staticProps);
-      Object.defineProperty(Constructor, "prototype", {
-        writable: false
-      });
-      return Constructor;
-    }
-    function _inheritsLoose(subClass, superClass) {
-      subClass.prototype = Object.create(superClass.prototype);
-      subClass.prototype.constructor = subClass;
-      _setPrototypeOf(subClass, superClass);
-    }
-    function _setPrototypeOf(o, p) {
-      _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
-        o.__proto__ = p;
-        return o;
-      };
-      return _setPrototypeOf(o, p);
-    }
-    function _unsupportedIterableToArray(o, minLen) {
-      if (!o) return;
-      if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-      var n = Object.prototype.toString.call(o).slice(8, -1);
-      if (n === "Object" && o.constructor) n = o.constructor.name;
-      if (n === "Map" || n === "Set") return Array.from(o);
-      if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-    }
-    function _arrayLikeToArray(arr, len) {
-      if (len == null || len > arr.length) len = arr.length;
-      for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-      return arr2;
-    }
-    function _createForOfIteratorHelperLoose(o, allowArrayLike) {
-      var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
-      if (it) return (it = it.call(o)).next.bind(it);
-      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
-        if (it) o = it;
-        var i = 0;
-        return function () {
-          if (i >= o.length) return {
-            done: true
-          };
-          return {
-            done: false,
-            value: o[i++]
-          };
-        };
-      }
-      throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
     }
 
     // @ts-ignore
     try {
-      self['workbox:core:7.2.0'] && _();
+      self['workbox:core:7.3.0'] && _();
     } catch (e) {}
 
     /*

@@ -4,7 +4,7 @@ this.workbox.streams = (function (exports, assert_js, Deferred_js, logger_js, Wo
 
     // @ts-ignore
     try {
-      self['workbox:streams:7.2.0'] && _();
+      self['workbox:streams:7.3.0'] && _();
     } catch (e) {}
 
     /*

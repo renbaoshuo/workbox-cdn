@@ -1,6 +1,6 @@
 // @ts-ignore
 try {
-  self['workbox:window:7.2.0'] && _();
+  self['workbox:window:7.3.0'] && _();
 } catch (e) {}
 
 /*
@@ -38,7 +38,7 @@ function messageSW(sw, data) {
 
 // @ts-ignore
 try {
-  self['workbox:core:7.2.0'] && _();
+  self['workbox:core:7.3.0'] && _();
 } catch (e) {}
 
 /*
